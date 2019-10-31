@@ -1,5 +1,5 @@
 module Exercise1 where
-
+-- Tekijä: Toni Pikkarainen
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map (Map (..))
@@ -224,5 +224,6 @@ määritelmään totuuteen.
 t: Tämäkin on tosi, koska transitiivisuus pätee Listalle.
 
 -}
+
 
 

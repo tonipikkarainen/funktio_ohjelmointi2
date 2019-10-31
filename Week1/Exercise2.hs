@@ -1,30 +1,16 @@
 module Exercise2 where
-
+-- Tekijä: Toni Pikkarainen
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map (Map (..))
 import qualified Data.Map as Map
 import Data.Void
-import Exercise1
+import Exercise1 -- otetaan omia wrappereita Exercise1:stä
 
 newtype All = All {getAll :: Bool} 
     deriving Show
 newtype Any = Any {getAny :: Bool} 
     deriving Show
-{-
-1. Instances for Bool. Ei ole monoidi
-2. Instances for Maybe a, given instances for a. On semigroup ja monoidi
-3. Instances for Either a b. On semigroup
-4. Instances for (a, b), given instances for a and b. On molemmat
-5. Instances for a -> a. Ei, koska ei ole Eq:ta
-6. Instances for a -> b, given instances for b. Ei, koska ei ole Eq:ta
-7. Instances for ().
-8. Instances for [a]. On
-9. Instances for NonEmpty a.
-10. Instances for Void.
-11. Instances for IO a, given instances for a. Ei, koska ei ole Eq:ta
-12. Instances for Map k a, given instances for a.
--}
 
 -- 1. Bool : lle Monoidit All, Any 
 instance Semigroup All where
@@ -129,18 +115,32 @@ mempty on validi identiteettialkio operaatiolle..
 -- Tuottaa oikeanpuoleisen, jos vasen on Left.
 -- Tuottaa vasemmanpuoleisen, jos vasen on Right.
 -- Tämän voisi määritellä myös toisinpäin.   
--- instance Semigroup (Either' a b) where
---    Either' (Left _) <> b = b 
---    a  <> _ = a
+instance Semigroup (Either' a b) where
+    Either' (Left _) <> b = b 
+    a  <> _ = a
 
 
 
 {-
-Ei saada tehtyä diskreettiä Semigroupia (Either a b), jos meillä ei ole
-mitään instanssia a:lle ja b:lle, koska emme voi vedota siihen,
-että a:n ja b:n Eq instanssien avulla saamme ehdon e täyttymään.
+Todistukset 
 
-Ei siis myöskään saada tehtyä diskreettiä monoidia
+diskreetti Semigroup Either':
+Jos on instanssi (Eq a, Eq b) ja Eq (Either' a b) saadaan ehto
+e täyttymään.
+
+p:  (x == y) /\ (z==w) -> x <> z == y <> w
+Jos ehto e pätee tämäkin pätee sillä, kun x == y niin x <> z ja y <> w 
+tuottavat aina molemmat joko vasemman tai molemmat oikean alkion.
+Kun vielä  z==w, niin  x <> z == y <> w.
+
+a: x <> (y<>z) == (x<>y) <> z 
+Tämäkin toimii: 
+- jos x = Either' (Right..) molemmista jää vain x
+- Jos x = Either' (Left ..) ja y = x = Either' (Right ..) molemmista jää vain y.
+- Muuten molemmista jää z
+
+Järkevää monoidia ei ole.
+
 -}
 
 -- 4.
@@ -202,30 +202,55 @@ Ja (<>) operaatio tuottaa aina kyseisen arvon.
 -}
 
 -- 8. [a]
-{-Tässähän voisimme luoda instanssit:
 
-instance Semigroup [a] where
-        (<>) = (++)
-instance Monoid [a] where
-        mempty  = []
+instance Semigroup (Lista a) where
+        Lista x <> Lista y = Lista (x ++ y)
+instance Monoid (Lista a) where
+        mempty  = Lista []
+{-
+Todistukset:
+diskreetti Semigroup [a]:
+Jos on instanssi Eq a ja Eq [a] saadaan ehto
+e täyttymään.
 
-Mutta emmekö tarvitsisi kuitenkin tiedon siitä, että a:lle on Eq instanssi, kuten
-eitherin tapauksessa, jotta voisimme osoittaa diskreetin semigroupin ja monoidin?
+p:  (x == y) /\ (z==w) -> x <> z == y <> w
+Jos ehto e pätee tämäkin pätee. Kun x: ään lisätään z, siitä tulee sama
+kuin jos y:n (joka on sama kuin x) lisätään w (joka on sama kuin z)
 
-Luentomuistiinpanoissa olikin mainittu tästä, että tarvitaan alla oleva 
-ekvivalenssi relaatio, mutta sitä ei voida esittää. En nyt lähde tekemään 
-todistuksia, koska en tiedä, miten näiden oletusten perusteella voin sanoa,
-että laki e toteutuu.
+a: x <> (y<>z) == (x<>y) <> z 
+Kyllä tämä toimii. (++) : n määritelmän mukaan
+x ++ ( y++z ) = x ++ [y1,...ym,z1,...,zk]  = [x1,...,xn,y1,...,ym,z1,...,zk]
+(x++y) ++ z   = [x1,...,xn,y1,...,ym] ++ z = [x1,...,xn,y1,...,ym,z1,...,zk]
+eli x ++ (y ++ z) == (x ++ y) ++ z 
+
+Diskreetti monoidi:
+
+l & r : selvästi [] ++ [x1,...xn] = [x1,...xn] ja [x1,...xn] ++ [] = [x1,...xn]
 
 -}
 
 -- 9. 
-{-
-Tässä voitaisiin tehdä seuraava instanssi:
 
-instance Semigroup (NonEmpty a) where
-        (a :| as) <> ~(b :| bs) = a :| (as ++ b : bs)
-mutta kohtaan 8.
+
+
+instance Semigroup (OmaNonEmpty a) where
+       OmaNonEmpty (a :| as) <> OmaNonEmpty (b :| bs) 
+        = OmaNonEmpty  (a :| (as ++ b : bs))
+
+{-
+Todistukset:
+Jos on instanssi Eq OmaNonEmpty saadaan ehto e toimimaan.
+p:  (x == y) /\ (z==w) -> x <> z == y <> w
+Jos ehto e pätee tämäkin pätee. Kun x: ään lisätään z, siitä tulee sama
+kuin jos y:n (joka on sama kuin x) lisätään w (joka on sama kuin z)
+
+a: x <> (y<>z) == (x<>y) <> z 
+Yhdistämisoperaatio on hyvin samanlainen kuin listoille. Kun se pätee
+listoille pätee se myös tälle NonEmptylle.
+
+Järkevää Monoidia ei ole koska kyseessä on NonEmpty.
+
+
 -}
 
 -- 10.
