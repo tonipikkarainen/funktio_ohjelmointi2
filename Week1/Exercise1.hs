@@ -158,11 +158,14 @@ Tällä kaikki lait pätevät selvästi.
 
 -- 8.
 instance Eq a => Eq (Lista a) where
-  Lista xs == Lista ys = vertaa xs ys where
-    vertaa [] [] = True 
-    vertaa (x:hs) (y:zs) 
-      | length (x:hs) /= length (y:zs) = False
-      | otherwise                      = x == y && (vertaa hs zs)
+  Lista [] == Lista [] = True
+  Lista (x:xs) == Lista (y:ys) = x == y && Lista xs == Lista ys
+  _ == _ = False
+  --vertaa xs ys where
+    --vertaa [] [] = True 
+    --vertaa (x:hs) (y:zs) 
+    --  | length (x:hs) /= length (y:zs) = False
+    --  | otherwise                      = x == y && (vertaa hs zs)
 
 {- Todistukset Lista:
 r: Tämä on selvästi totta (Eq a):n perusteella .

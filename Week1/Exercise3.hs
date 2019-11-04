@@ -1,4 +1,4 @@
---{-# LANGUAGE  FlexibleContexts #-}
+
 -- Tekijä: Toni Pikkarainen
 module Week1.Exercise3 where
 import Control.Monad.State
@@ -21,11 +21,38 @@ data Transaction' k m a = Transaction'
 
 data Eq' a = Eq' { equ :: a -> a -> Bool  }
 
+data Ord' a = Ord' {comp :: a -> a -> Ordering,
+                    (<) :: a -> a -> Bool,
+                    (<=) :: a -> a -> Bool,
+                    (>) :: a -> a -> Bool,
+                    (>=) :: a -> a -> Bool,
+                    max :: a -> a -> a,
+                    min :: a -> a -> a}
+
+intOrd :: Ord' Int
+intOrd = Ord' comp s se l le max min where
+          comp x y 
+            | x > y = GT
+            | x < y = LT
+            | x == y = EQ
+          s = (<)
+          se = (<=)
+          l = (>)
+          le = (>=)
+          max x y 
+            | x > y = x
+            | otherwise = y
+          min x y 
+            | x < y = x
+            | otherwise  = y
+
+
+
 intEq :: Eq' Int
 intEq =  Eq' {equ = (==)}
 
--- Muita ainakin Ord, semigroup ja monoid.. 
--- Tässä toteutettu aikaresurssin vuoksi vain kahdelle luokalle
+
+-- Tässä toteutettu kolmelle luokalle
 -- vaaditut muunnokset tyypeiksi. Samaa ideaa voitaisiin soveltaa
 -- muihinkin edellä mainittuihin tyyppiluokkiin.
 
@@ -34,13 +61,13 @@ transIntIOString = Transaction'
   (  
     let recall2 i =  do
         s <- readFile database
-        case navigate intEq  i (lines s) of
+        case navigate intOrd intEq  i (lines s) of
           At _ c _ -> pure c
           _ -> ioError (userError "Invalid line number")
      in recall2
   ) (let store2 eq i x  = do
             s <- readFile database
-            case navigate intEq i (lines s) of
+            case navigate intOrd  intEq i (lines s) of
               Before rs -> writeFile database
                 (unlines (x : rs))
               At ls _ rs -> writeFile database
@@ -69,8 +96,8 @@ transIntStateString = Transaction'
                 in  store2
               )
 
-navigate ::Eq' Int ->  Int -> [a] -> Cursor a
-navigate eq n xs = case compare n (pred 0) of
+navigate :: Ord' Int ->  Eq' Int ->  Int -> [a] -> Cursor a
+navigate ord eq n xs = case (ord comp) n (pred 0) of
   LT -> WayBefore
   EQ -> Before xs
   GT -> let
