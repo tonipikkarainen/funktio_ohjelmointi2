@@ -22,6 +22,10 @@ instance (Functor m, Functor n) => Functor (Sum m n) where
    fmap f (InL x) = InL (fmap f x)
    fmap f (InR x) = InR (fmap f x)
 
+{-
+Todistus:
+Lait pätevät, koska tässä hyödynnetään tiedettyjä funktoreita m ja n.
+-}  
  -- m on funktori, joten fmap f (m a) = m b   
 
 
@@ -31,7 +35,10 @@ data Product m n a = Pair {fstPair :: m a, sndPair :: n a}
 instance (Functor m, Functor n) => Functor (Product m n) where
   fmap f (Pair {fstPair = x, sndPair = y }) 
     = Pair { fstPair = (fmap f x) , sndPair = (fmap f y) }
-
+{-
+Todistus:
+Lait pätevät, koska tässä hyödynnetään tiedettyjä funktoreita m ja n.
+-}  
 
 newtype Identity a = Identity {runIdentity :: a}
   deriving Show
@@ -39,11 +46,30 @@ newtype Identity a = Identity {runIdentity :: a}
 instance Functor Identity where
   fmap f (Identity {runIdentity = x }) = Identity {runIdentity = f x}
 
+{-
+Todistukset:
+ID:
+Pätee selvästi
+
+f.g:
+Tämäkin pätee selvästi.
+fmap (f.g) (Identity {runIdentity = x }) = Identity {runIdentity = (f.g) x} ==
+  (fmap f).(fmap g) (Identity {runIdentity = x })
+-}  
+
 newtype Compose m n a = Compose {getCompose :: m (n a)}
   deriving Show
 
 instance (Functor m, Functor n) => Functor (Compose m n) where
   fmap f (Compose { getCompose = x }) = Compose { getCompose = fmap (fmap f) x }
+
+{-
+Todistukset:
+Tässäkin hyödynnetään tunnettujen funktoreiden n ja m ominaisuuksia joten 
+lait pätevät. m:ää siis fmap:ätään (fmap f):llä joka siis fmap:ää m:n sisältöä
+eli n:ää.
+
+-}
 
 -- \(fmap f x) -> fmap f 
 -- m funktori joten 
@@ -55,25 +81,53 @@ newtype Const a b = Const {getConst :: a}
 instance Functor (Const a) where
   fmap f (Const {getConst = x}) = (Const {getConst = x})
 
+{-
+Lait pätevät selvästi.
+-}
+
 data Proxy a = Proxy
   deriving Show
 
 instance Functor Proxy where
   fmap f Proxy = Proxy
+{-
+Lait pätevät selvästi.
+-}
 
 newtype State a b = State {runState :: a -> (b, a)}
 
 instance Functor (State a) where 
   fmap f (State {runState = x}) = State {runState = (g . x)} where
     g (x, y) = ((f x), y)
- 
+{-
+Todistukset:
+ID:
+fmap id (State {runState = x})  = State {runState = x)} , koska
+nyt g on selvästi id.
+
+f . g :
+Vaikutukset näkyvät funktiossa g - yhdistetyn funktion fmap - ominaisuudet pätee 
+selvästi.
+-}
+
 newtype Cont a b = Cont {runCont :: (b -> a) -> a}
 
--- löysin netistä mutta en ymmärrä:
+
 instance Functor (Cont a) where
   fmap f (Cont {runCont = x}) = Cont {runCont = x . (. f)}
+{-
+ID:
+Koska 
+(. id ) :: ( b->c ) -> b -> c
+, nähdään, että x yhdistetty siihen tulee samanlainen tyyppimuoto, kuin ilman
+yhdistämistä eli x :: (b->c) -> c 
+joten id pätee.
 
--- ?? 
+
+-}
+-- (. f) :: (b -> r) -> a -> r
+-- x :: (a -> r) -> r
+-- x . (. f) :: (b -> r) -> r 
 
 newtype Star m a b = Star {runStar :: a -> m b}
 
