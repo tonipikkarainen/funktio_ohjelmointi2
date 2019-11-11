@@ -10,7 +10,7 @@ import Data.Profunctor hiding (Star, Costar)
 import Data.Void
 import Exercise1
 
--- Todistukset puuttuu
+
 
 
 
@@ -26,7 +26,7 @@ instance (Functor m, Functor n) => Functor (Sum m n) where
 Todistus:
 Lait pätevät, koska tässä hyödynnetään tiedettyjä funktoreita m ja n.
 -}  
- -- m on funktori, joten fmap f (m a) = m b   
+
 
 
 data Product m n a = Pair {fstPair :: m a, sndPair :: n a}
@@ -133,19 +133,65 @@ newtype Star m a b = Star {runStar :: a -> m b}
 
 instance (Functor m) => Functor (Star m r)  where
   fmap f (Star x) = Star ((fmap f) . x )
+{-
+Todistukset:
 
+m on funktori, ja hyödynnetään sen käyttäytymistä, joten lait pätevät.
+
+-}
 
 newtype Costar m a b = Costar {runCostar :: m a -> b}
 
 instance (Functor m) => Functor (Costar m a) where
   fmap f (Costar x) = Costar (f . x)
+{-
+Todistukset:
+
+Todistettu Exercise1.hs :ssä Omafunktiolle.
+-}
 
 newtype Yoneda m a = Yoneda {runYoneda :: forall b. (a -> b) -> m b}
 
 instance (Functor m) => Functor (Yoneda m) where
   fmap f (Yoneda {runYoneda = x}) = Yoneda {runYoneda = x . (. f)}
+{-
+Todistukset: 
+ID: 
+(. id) :: (a -> c) -> a -> c
 
+Joten 
+x . (. id ) :: (a -> c) -> m c  ja tämä täsmää pelkän x:n tyyppiin.
+
+f.g : 
+f :: c -> b
+g :: a -> c
+joten f . g :: a -> b
+
+fmap (f.g) (Yoneda {runYoneda = x})  = Yoneda {runYoneda = x . (. (f . g))}
+
+(. (f . g )) :: (b -> k) -> a -> k
+
+(fmap f). (fmap g) (Yoneda {runYoneda = x}) = (fmap f) Yoneda {runYoneda = x . (. g)} =
+   Yoneda {runYoneda = (x . (. g)) . (.f ) = 
+     Yoneda {runYoneda = x . (. g) . (. f ) }
+
+(. g) :: (c -> w) -> a -> w  
+(. f) :: (b -> h) -> c -> h
+
+Joten ((. g) . (. f))  :: (b -> h) -> a -> h
+
+Tyyppitarkastelusta nähdään, että funktion (. (f . g )) tyyppi on sama kuin funktion
+((. g) . (. f)), joten lain täytyy päteä.
+
+-}
 data Coyoneda m a = forall b. Coyoneda (b -> a) (m b)
 
 instance (Functor m) => Functor (Coyoneda m) where
   fmap f (Coyoneda x y) = Coyoneda (f . x) y
+
+{-
+Todistukset:
+Nämä pätevät selvästi. Samankaltainen tilanne on osoitettu
+Exercise1.hs :ssä Omafunktiolle.
+
+-}

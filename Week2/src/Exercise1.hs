@@ -1,4 +1,4 @@
-{-# LANGUAGE MagicHash #-}
+{-# LANGUAGE MagicHash, UnboxedTuples #-}
 module Exercise1 where
 import Data.Bifunctor
 import Data.Functor.Contravariant
@@ -8,6 +8,7 @@ import Data.Map (Map (..))
 import qualified Data.Map as Map
 import Data.Profunctor
 import Data.Void
+import GHC.IO
 --import GHC.Prim
 
 
@@ -233,22 +234,33 @@ pätevät tällä, koska päti listoille.
 
 -- 11. IO a
 
+
 --instance Functor OmaIO where
 --  fmap f (OmaIO x) = OmaIO y where 
---    y = do
---      z <- x
---      return (f z)
+--    y = (x >>= \z -> (return (f z)))
 
 instance Functor OmaIO where
-  fmap f (OmaIO x) = OmaIO y where 
-    y = (x >>= \z -> (return (f z)))
+    fmap f (OmaIO x) = OmaIO y where
+      y = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO ( (return . f) a ) s1   
 
- {-
- Todistus:
- ID:
-    ??
- -}   
+{-
+Todistukset:
+ID:
+Selvästi pätee, sillä return . id  == return
 
+f.g : 
+
+fmap (f.g) (OmaIO x) = OmaIO y where
+      y = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO ( (return . (f.g)) a ) s1
+
+(fmap f) . (fmap  g) (OmaIO x) = fmap f (OmaIO y) where     
+      y = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO ( (return (g a) ) s1 
+
+= OmaIO z where     
+      z = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO ( (return (f (g a)) ) s1 
+= OmaIO z where     
+      z = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO ( (return . (f .g)) a)  s1 
+      -}
 instance Functor (OmaMap a) where
   fmap f (OmaMap x)= OmaMap (Map.map f x)
 {-
