@@ -30,7 +30,7 @@ version = Version [0,1,0,0] []
 bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir :: FilePath
 
 bindir     = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/bin"
-libdir     = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/lib/x86_64-osx-ghc-8.6.5/ties341-0.1.0.0-5IQHWxm0wqPLjv2D0j6utw-ties341"
+libdir     = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/lib/x86_64-osx-ghc-8.6.5/ties341-0.1.0.0-HZ0kz4Qu7nrHwNfdnGYLTM-ties341"
 dynlibdir  = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/lib/x86_64-osx-ghc-8.6.5"
 datadir    = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/share/x86_64-osx-ghc-8.6.5/ties341-0.1.0.0"
 libexecdir = "/Users/tonipikkarainen/master_degree/funktio2/ties341/.stack-work/install/x86_64-osx/5f70fba4a9b7feedb103cc5bbea04c9a958feaca1415e27a352726ed8d0fe43c/8.6.5/libexec/x86_64-osx-ghc-8.6.5/ties341-0.1.0.0"

@@ -24,4 +24,5 @@ executable ties341
     Week2.Exercise1
     Week2.Exercise2
     Week2.Exercise3
-  build-depends:       base >= 4.7 && < 5, containers, profunctors
+    Week3.Exercise1
+  build-depends:       base >= 4.7 && < 5, containers, profunctors,mtl

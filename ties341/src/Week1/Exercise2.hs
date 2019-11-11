@@ -5,7 +5,7 @@ import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map (Map (..))
 import qualified Data.Map as Map
 import Data.Void
-import Exercise1 -- otetaan omia wrappereita Exercise1:stä
+import Week1.Exercise1 -- otetaan omia wrappereita Exercise1:stä
 
 newtype All = All {getAll :: Bool} 
     deriving Show

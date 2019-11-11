@@ -23,6 +23,7 @@ import Data.Bifunctor
 import Data.Functor.Contravariant
 import Data.Profunctor
 
+
 newtype WrappedBifunctor m a b = WrapBifunctor {unwrapBifunctor :: m a b}
   deriving Show
 

@@ -2,6 +2,7 @@
 module Week1.Exercise3 where
 import Control.Monad.State
 import Data.List
+--import Prelude hiding ((<),(>), (>=) ,(<=),min,max)
 --import GHC.Exts
 
 
@@ -21,10 +22,10 @@ data Transaction' k m a = Transaction'
 data Eq' a = Eq' { equ :: a -> a -> Bool  }
 
 data Ord' a = Ord' {comp :: a -> a -> Ordering,
-                    (<) :: a -> a -> Bool,
-                    (<=) :: a -> a -> Bool,
-                    (>) :: a -> a -> Bool,
-                    (>=) :: a -> a -> Bool,
+                    (<*) :: a -> a -> Bool,
+                    (<=*) :: a -> a -> Bool,
+                    (>*) :: a -> a -> Bool,
+                    (>=*) :: a -> a -> Bool,
                     max :: a -> a -> a,
                     min :: a -> a -> a}
 
@@ -96,7 +97,7 @@ transIntStateString = Transaction'
               )
 
 navigate :: Ord' Int ->  Eq' Int ->  Int -> [a] -> Cursor a
-navigate ord eq n xs = case (ord comp) n (pred 0) of
+navigate ord eq n xs = case (comp ord) n (pred 0) of
   LT -> WayBefore
   EQ -> Before xs
   GT -> let
