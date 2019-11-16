@@ -72,23 +72,34 @@ quoted_both =quoted_left <* (single '"')
 
 unit :: Parser Unit
 --unit = unQuote <|> quoted
-unit = many (anySingleBut ',') 
+--unit = many (anySingleBut ',')  
+unit =(single '"' *> many (anySingleBut '"') <* single '"' ) <|>   many (noneOf [',','\n','\r'])
+-- testi 
+-- Rivi = unit ( UnitSeparator unit ) * eof 
 
 record :: Parser Record
-record =  many ((single ',') *> sev_unit)
+record =  (units <* record_sep)   <|> (units <* eof) 
+
+units = (:) <$> unit <*> (many ( (single ',') *> sev_unit )) 
+
+group :: Parser Group
+group = (++) <$> (many (units <* record_sep)) <*> ((:) <$> (units <* eof) <*> pure [])
+
+record_sep = single ('\n') <|> ((single '\r') <* (single '\n'))
 
 sev_unit = (many (single ',') *> unit) <|> unit 
 
 -- Tähän tarttuu string, jossa ei ole pilkkuja.
 str =  many (anySingleBut ',') 
-eol = single '\n'
-
-
---group :: Parser Group
+--nyt toimii ilman väli quoteja!!
+readTxtFile f = do
+  s <- readFile f
+  print (parseProgram group s)
+  --group :: Parser Group
 --group = many record
 
-parseProgram p s = getParser p s
-     --Right (x,y) -> Just (y)
-     --Left _ ->   Nothing
+parseProgram p s =  case  getParser p s of
+     Right (x,y) -> Just (y)
+     Left _ ->   Nothing
 
 
