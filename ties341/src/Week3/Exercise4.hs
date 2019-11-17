@@ -35,71 +35,62 @@ showsGroup xsss = flip (foldr (\ xss ->
       Join (Right cs) -> '\n' : cs in
     Join (Right (f x)))) xss . Join . Left)) xsss
 
---runParser :: Parser a -> String -> Either ParseError (String, a)
---runParser p mjono = getParser p mjono 
-{-
-Otetaan string ->
-    - otetaan char
-    - jos on quote -> niin luetaan chunk, 
-        kunnes tulee taas quote merkki (tästä unit ja lisätään se recordiin)
-         tai kunnes tulee rivin vaihto (tästä unit, se recordiin, ja 
-         record groupiin, aloitetaan uusi record)
-        -> tästä unit
-        -> lisätään unit
-    - jos on (,) , edellisistä unit ja lisätään recordiin, siirrytään seuraavaan
-    - jos ei, lisätään käsittelyssä olevaan unitiin 
 
--}
-{-
-yks :: Unit
-yks = unQuote <|> quote
-(<|>) = undefined
+-- Tästä alkaa itse tehty parseri:
 
-char = undefined 
-(<*>) = undefined
-quote = char '"' <*> many (anySingleBut '"') <*> char '"'
-
-unQuote =  many (anySingleBut '"') <*> yks
--}
-
-unQuoted = many (anySingleBut ',') 
-
-quoted_left = (single '"') *> (many (anySingleBut '"')) 
-quoted_both =quoted_left <* (single '"')
---yks :: Unit
---yks = quoted <|> yks 
---(<|>) = undefined
-
+-- Pienin yksikkö - pilkkujen välistä otettu merkkijono.
+-- Voi olla lainausmerkkien sisällä tai ilman lainausmerkkejä.
 unit :: Parser Unit
---unit = unQuote <|> quoted
---unit = many (anySingleBut ',')  
-unit =(single '"' *> many (anySingleBut '"') <* single '"' ) <|>   many (noneOf [',','\n','\r'])
--- testi 
--- Rivi = unit ( UnitSeparator unit ) * eof 
+unit = quoted <|> many (noneOf [',','\n','\r', '"'])
 
+
+-- Tässä otetaan kiinni lainausmerkkien välissä olevat merkkijonot.
+-- Siellä saa olla myös merkkejä ',' , '""' , '\n' , '\r' 
+-- eivätkä nämä pilkut tai rivinvaihdot katkaise yksikköä.
+
+-- TODO: Nyt rivinvaihto merkit jäävät näkyviin poimittuihin
+-- merkkijonoihin - haittaako? 
+-- Myös hyväksytystä '""' -merkkijonosta lainausmerkkien sisällä
+-- toinen merkki jää poimitusta merkkijonosta pois.
+-- En keksinyt kuinka tällä tekniikalla tehdään "match", joko 
+-- merkkiin tai merkkijonoon (siten että poimitaan talteen). 
+quoted :: Parser Unit
+quoted = single '"' *> (many (single '"' *> single '"' <|>  (anySingleBut '"')  )) <* single '"' 
+
+-- Luodaan rivi:
+-- Alussa pitää olla yksi unit, sitten pitää tulla 0 tai enemmän kokonaisuuksia
+-- ',' + unit
 record :: Parser Record
-record =  (units <* record_sep)   <|> (units <* eof) 
+record =  (:) <$> unit <*> (many ( (single ',') *> unit )) 
 
-units = (:) <$> unit <*> (many ( (single ',') *> sev_unit )) 
-
+-- Luetaan koko tiedosto:
+-- sisältää monta riviä ja rivi sisältää monta yksikköä.
+-- Alkuun 0 tai enemmän rivejä joiden lopussa on rivinvaihto ("record_sep").
+-- Yhdistetään ne loppuun vaadittavaan riviin, jossa on 
+-- tiedostonloppu ("eof") viimeisenä.
 group :: Parser Group
-group = (++) <$> (many (units <* record_sep)) <*> ((:) <$> (units <* eof) <*> pure [])
+group = (++) <$> (many (record <* record_sep)) <*> ((:) <$> (record <* eof) <*> pure [])
 
+-- Rivinvaihto
+-- Joko '\n' tai '\r''\n'
+record_sep :: Parser Char
 record_sep = single ('\n') <|> ((single '\r') <* (single '\n'))
 
-sev_unit = (many (single ',') *> unit) <|> unit 
+-- Testausjono
+testijono = ",,testaan,1,1,,,,\" j,j,j\"\"hello\"\",,,\",\r\n,test,\"i,i,i,i\""
 
--- Tähän tarttuu string, jossa ei ole pilkkuja.
-str =  many (anySingleBut ',') 
 --nyt toimii ilman väli quoteja!!
 readTxtFile f = do
   s <- readFile f
-  print (parseProgram group s)
-  --group :: Parser Group
---group = many record
+  print (getParser group s)
 
-parseProgram p s =  case  getParser p s of
-     Right (x,y) -> Just (y)
-     Left _ ->   Nothing
+
+
+-- Tällä eliminoidaan puuttuvia arvoja (eli jos pilkkujen välissä paljon tyhjää,
+-- jätetään ne huomiotta.) Tarvitseeko tehdä?
+-- Ei käytössä nyt!
+-- sev_unit :: Parser Unit
+-- sev_unit = (many (single ',') *> unit) <|> unit 
+
 
 
