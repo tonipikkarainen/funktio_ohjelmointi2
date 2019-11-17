@@ -79,7 +79,6 @@ record_sep = single ('\n') <|> ((single '\r') <* (single '\n'))
 -- Testausjono
 testijono = ",,testaan,1,1,,,,\" j,j,j\"\"hello\"\",,,\",\r\n,test,\"i,i,i,i\""
 
---nyt toimii ilman väli quoteja!!
 readTxtFile f = do
   s <- readFile f
   print (getParser group s)
