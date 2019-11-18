@@ -5,16 +5,10 @@ import Week2.Exercise2
 
 
 
--- Puuttuu: Sum, Cont
+-- Todistukset uupuu, priorision tällä viikolla
+-- mielenkiintoista Parseri-tehtävää.
 
--- Sum - en keksi
--- Mikä otetaan lopulliseksi konstruktoriksi?
-{-
-instance (Applicative m, Applicative n) => Applicative (Sum m n) where
-    pure x = InL (pure x)
-    InL f <*> InL x = InL (f <*> x)
-    InR f <*> InL x = InR (f <*> x) ...
--}
+-- Sum - ei mahdollista
 
 -- Product
 instance (Applicative m, Applicative n) => Applicative (Product m n) where
