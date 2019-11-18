@@ -55,7 +55,7 @@ unit = quoted <|> many (noneOf [',','\n','\r', '"'])
 -- En keksinyt kuinka tällä tekniikalla tehdään "match", joko 
 -- merkkiin tai merkkijonoon (siten että poimitaan talteen). 
 quoted :: Parser Unit
-quoted = single '"' *> (many (single '"' *> single '"' <|>  (anySingleBut '"')  )) <* single '"' 
+quoted = single '"' *> (mconcat <$> (many ((\x y -> x:y:[]) <$> single '"' <*> single '"' <|>  ((:[]) <$> anySingleBut '"')  ))) <* single '"' 
 
 -- Luodaan rivi:
 -- Alussa pitää olla yksi unit, sitten pitää tulla 0 tai enemmän kokonaisuuksia
@@ -81,15 +81,11 @@ testijono = ",,testaan,1,1,,,,\" j,j,j\"\"hello\"\",,,\",\r\n,test,\"i,i,i,i\""
 
 readTxtFile f = do
   s <- readFile f
+  seq (length s) (pure ())
   print (getParser group s)
 
 
 
--- Tällä eliminoidaan puuttuvia arvoja (eli jos pilkkujen välissä paljon tyhjää,
--- jätetään ne huomiotta.) Tarvitseeko tehdä?
--- Ei käytössä nyt!
--- sev_unit :: Parser Unit
--- sev_unit = (many (single ',') *> unit) <|> unit 
 
 
 
