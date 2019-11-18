@@ -5,8 +5,7 @@ data ParseError = SomethingWentWrong
   deriving Show
 
 
--- rupesi toimimaan kun tämän vaihtoi newtypeksi - miksi???!!!????!!!!
---
+
 newtype Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
 -- Luodaan funktori-instanssi
 instance Functor Parser where
