@@ -4,7 +4,6 @@ import Control.Applicative
 data ParseError = SomethingWentWrong
   deriving Show
 
--- Miksi ei toimi, kun data newtypen paikalla
 
 data Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
 -- Luodaan funktori-instanssi
@@ -28,6 +27,8 @@ instance Alternative Parser where
             Left _ -> ((getParser y) z)
             result      -> result
 {-
+-- Tällä koodilla ei toiminut kun parserin tyyppi oli määritelty
+-- data-avainsanalla.
 instance Applicative Parser where
     pure x = Parser (\z -> Right (z,x))
     Parser f <*> Parser x = Parser (\merkkijono -> 
