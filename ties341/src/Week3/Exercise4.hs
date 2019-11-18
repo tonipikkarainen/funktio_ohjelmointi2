@@ -47,13 +47,6 @@ unit = quoted <|> many (noneOf [',','\n','\r', '"'])
 -- Tässä otetaan kiinni lainausmerkkien välissä olevat merkkijonot.
 -- Siellä saa olla myös merkkejä ',' , '""' , '\n' , '\r' 
 -- eivätkä nämä pilkut tai rivinvaihdot katkaise yksikköä.
-
--- TODO: Nyt rivinvaihto merkit jäävät näkyviin poimittuihin
--- merkkijonoihin - haittaako? 
--- Myös hyväksytystä '""' -merkkijonosta lainausmerkkien sisällä
--- toinen merkki jää poimitusta merkkijonosta pois.
--- En keksinyt kuinka tällä tekniikalla tehdään "match", joko 
--- merkkiin tai merkkijonoon (siten että poimitaan talteen). 
 quoted :: Parser Unit
 quoted = single '"' *> (mconcat <$> (many ((\x y -> x:y:[]) <$> single '"' <*> single '"' <|>  ((:[]) <$> anySingleBut '"')  ))) <* single '"' 
 
