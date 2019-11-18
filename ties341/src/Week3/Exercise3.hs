@@ -4,17 +4,30 @@ import Control.Applicative
 data ParseError = SomethingWentWrong
   deriving Show
 
+-- Miksi ei toimi, kun data newtypen paikalla
 
-
-newtype Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
+data Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
 -- Luodaan funktori-instanssi
 instance Functor Parser where
     fmap f (Parser x) = Parser $ \z -> 
         case x z of
             Left _ -> Left SomethingWentWrong
             Right (jalj, merkki) -> Right (jalj, f merkki)
-
-
+-- Nyt toimii myös data:lla
+instance Applicative Parser where
+    pure x = Parser (\z -> Right (z,x))
+    x <*> y = Parser (\merkkijono -> 
+        case ((getParser x) merkkijono) of 
+            Left    _     -> Left SomethingWentWrong
+            Right (m, a) -> getParser (fmap a y) m
+            )
+instance Alternative Parser where
+    empty = Parser (\z -> Left SomethingWentWrong)
+    x <|> y = Parser $ \z -> 
+        case (getParser x) z of 
+            Left _ -> ((getParser y) z)
+            result      -> result
+{-
 instance Applicative Parser where
     pure x = Parser (\z -> Right (z,x))
     Parser f <*> Parser x = Parser (\merkkijono -> 
@@ -29,6 +42,7 @@ instance Alternative Parser where
         case x z of 
             Left _ -> (y z)
             result      -> result
+-}
 
 
 
