@@ -67,7 +67,7 @@ instance (Applicative m) => Applicative (Star m r) where
 
 -- Costar
 -- newtype Costar m a b = Costar {runCostar :: m a -> b}
-instance (Applicative m) => Applicative (Costar m r) where
+instance Applicative (Costar m r) where
     pure x = Costar (\_ -> x)
     Costar f <*> Costar x = Costar (\z -> (f z) (x z))
 

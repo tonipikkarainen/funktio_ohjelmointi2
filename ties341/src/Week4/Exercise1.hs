@@ -1,6 +1,6 @@
+{-# LANGUAGE MagicHash, UnboxedTuples #-}
 module Week4.Exercise1 where
 
-{-# LANGUAGE MagicHash, UnboxedTuples #-}
 
 import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NonEmpty
@@ -65,3 +65,26 @@ instance Monad (OmaFunktio r) where
 -- x z :: a
 -- f (x z) :: r -> b
 -- (\z -> f (x z)) :: r -> Omafunktio ...
+
+instance Monad Lista where
+    return = pure
+    Lista x >>= f =  Lista (concat (map getLista (map f x))) 
+
+
+instance Monad OmaNonEmpty where
+    return = pure
+    OmaNonEmpty x >>= f = y where
+        z = NonEmpty.toList x
+        listaWithNon = map getEmpty (map f z)
+        listaWithLista = map NonEmpty.toList listaWithNon
+        y = OmaNonEmpty (NonEmpty.fromList (concat listaWithLista))
+
+
+instance Monad OmaIO where
+    return x=  OmaIO (IO (\s -> (# s, x #)))
+    OmaIO x >>= f = OmaIO y where 
+        unIO (IO k) = k
+        y = IO $ \s -> case unIO x s of (# s1 , a #) -> unIO (getIO (f a)) s1 
+            
+
+

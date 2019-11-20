@@ -142,7 +142,7 @@ m on funktori, ja hyödynnetään sen käyttäytymistä, joten lait pätevät.
 
 newtype Costar m a b = Costar {runCostar :: m a -> b}
 
-instance (Functor m) => Functor (Costar m a) where
+instance Functor (Costar m a) where
   fmap f (Costar x) = Costar (f . x)
 {-
 Todistukset:
