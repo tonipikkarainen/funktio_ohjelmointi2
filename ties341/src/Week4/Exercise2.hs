@@ -2,7 +2,7 @@ module Week4.Exercise2 where
 
 import Week2.Exercise2
 import Week3.Exercise2
--- Coyoneda puuttuu!
+-- Coyoneda ja Cont puuttuu!
 {-
 Instances for Sum m n a, given instances for m and n.  (-)
 Instances for Product m n a, given instances for m and n. (+)
@@ -15,7 +15,7 @@ Instances for Cont a b. (?)
 Instances for Star m a b, given instances for m. (+)
 Instances for Costar m a b. (+)
 Instances for Yoneda m a, given instances for m. (+)
-Instances for Coyoneda m a, given instances for m.
+Instances for Coyoneda m a, given instances for m. (?)
 -}
 
 instance (Monad m, Monad n) => Monad (Product m n) where
