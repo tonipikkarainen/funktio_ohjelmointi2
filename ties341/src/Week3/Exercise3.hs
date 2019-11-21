@@ -5,7 +5,7 @@ data ParseError = SomethingWentWrong
   deriving Show
 
 
-data Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
+newtype Parser a = Parser {getParser :: String -> Either ParseError (String, a)}
 -- Luodaan funktori-instanssi
 instance Functor Parser where
     fmap f (Parser x) = Parser $ \z -> 
@@ -26,6 +26,13 @@ instance Alternative Parser where
         case (getParser x) z of 
             Left _ -> ((getParser y) z)
             result      -> result
+instance Monad Parser where
+    return = pure
+    x >>= f = Parser (\s -> case (getParser x) s of
+                        Left _ -> Left SomethingWentWrong
+                        Right (s1, z) -> case (getParser (f z)) s1 of
+                            Left _ -> Left SomethingWentWrong
+                            Right y -> Right y ) 
 {-
 -- Tällä koodilla ei toiminut kun parserin tyyppi oli määritelty
 -- data-avainsanalla.
