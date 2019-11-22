@@ -86,8 +86,5 @@ chunk :: String -> Parser String
 chunk ""     = Parser $ \input -> Right (input, "")
 chunk (x:merkkijono) = (:) <$> single x <*> chunk merkkijono
 
-    
-
-
-   
-
+fail_oma :: Parser ()
+fail_oma = Parser $ \_ -> Left SomethingWentWrong
