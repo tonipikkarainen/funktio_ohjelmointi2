@@ -2,7 +2,8 @@ module Week4.Exercise2 where
 
 import Week2.Exercise2
 import Week3.Exercise2
--- Coyoneda ja Cont puuttuu!
+
+-- Mukana yksi todistus 
 
 instance (Monad m, Monad n) => Monad (Product m n) where
     return x = Pair (return x) (return x)
@@ -60,7 +61,6 @@ instance Monad (Cont a) where
     Cont x >>= f = Cont y where
         y = \h -> x $ (\k -> (runCont (f k)) h)
 
--- star m a b :: a -> m b
 
 instance (Monad m) => Monad (Star m a) where
     return = pure
@@ -78,8 +78,15 @@ instance (Monad m) => Monad (Yoneda m) where
     Yoneda x >>= f = Yoneda y where
         y = \z -> x id >>= \k -> runYoneda (f k) z 
 
+
 -- data Coyoneda m a = forall b. Coyoneda (b -> a) (m b)
---instance (Monad m) => Monad (Coyoneda m) where
---    return = pure
---    Coyoneda x y >>= f = Coyoneda id z where
---        z = y >>=  (f . x) 
+instance (Monad m) => Monad (Coyoneda m) where
+    return = pure
+    Coyoneda x y >>= f = Coyoneda id z where
+        z = y >>= lowerCoyoneda . f . x 
+
+liftCoyoneda :: f a -> Coyoneda f a
+liftCoyoneda = Coyoneda id
+
+lowerCoyoneda :: Functor f => Coyoneda f a -> f a
+lowerCoyoneda (Coyoneda f m) = fmap f m

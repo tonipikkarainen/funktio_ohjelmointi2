@@ -102,17 +102,17 @@ let' = do
     chunk "in"
     spaces
     z <- add
+    spaces
     return (Let x y z)
 
 -- Muuttuja
 var :: Parser Expr 
 var = do 
+    spaces
     x <- ident 
+    spaces
     return (Var x)   
 
--- Onko tämä tarkistus, joka fail_oma:lla
--- hoidettu ok?
--- Onko tämä nyt esimerkki context-sensitivitystä?
 
 -- Muuttujan nimi.
 -- Pitää alkaa pienellä kirjaimella.

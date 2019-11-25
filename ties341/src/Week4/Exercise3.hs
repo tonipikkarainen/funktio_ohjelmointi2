@@ -29,7 +29,7 @@ data Expr = Add Expr Expr | Zero | Mul Expr Expr | One |
   deriving Show
 
 openDeep :: Expr
-openDeep = Add One undefined
+openDeep = Add One (Var "undefined")
 
 closedShallow :: Num a => a
 closedShallow = let

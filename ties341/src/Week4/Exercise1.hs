@@ -139,7 +139,9 @@ m ==  OmaTuple (x, y)
 Lait siis pätevät.
 
 -}
-    -- (-> )
+
+-- Muut todistukset samalla idealla.
+-- (-> )
 
 instance Monad (OmaFunktio r) where
     return = pure 
