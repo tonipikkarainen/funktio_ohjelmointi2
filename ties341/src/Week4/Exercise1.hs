@@ -30,6 +30,11 @@ Instances for NonEmpty a.
 
 Instances for IO a.
 
+Monad laws:
+Left ID: return a >>= k  =  k a
+Right ID: m >>= return  =  m
+Associativity: m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
+
 
 -}
 
@@ -41,17 +46,100 @@ instance Monad Maybe' where
     return x = Maybe' (Just x) 
     Maybe' (Just x) >>= f = f x
     Maybe' Nothing >>= f = Maybe' Nothing
+{-
+Todistus:
+Left ID:
+return a on aina -> Maybe' (Just a) ja 
+Maybe' (Just a) >>= k == k a,
+joten pätee.
 
+Right ID: 
+Jos m == Maybe' Nothing,
+m >>= f == m (aina)
+ja
+Jos m == Maybe' (Just x)
+m >>= return == return x == Maybe' (Just x) == m,
+joten laki pätee.
+
+Associativity:
+1) m == Maybe' (Just z)
+(m >>= k ) >>= h == (k z) >>= h 
+    1.1) k z = Maybe' (Just y) :
+    (k x) >>= h == h y
+    1.2) k z = Maybe' Nothing
+    (k x) >>= h == Maybe' Nothing
+
+m >>= (\x -> k x >>= h) == (\x -> k x >>= h) z ==
+    k z >>= h ... ja tästä jatkuu samoin kuin yläpuolella.
+
+2) Jos m == Maybe' Nothing --> nähdään melko helposti, että
+molemmista vaihtoehdoista tulee Maybe' Nothing tulokseksi.
+
+Lait siis pätevät.
+
+-}
 -- Either
 instance Monad (Either' a) where
     return x = Either' (Right x)
     Either' (Right x) >>= f =  f x
     Either' (Left x) >>= f = Either' (Left x)
+{-
+Todistus:
+Left ID:
+return a on aina -> Either' (Right a) ja 
+Either' (Right a) >>= k == k a,
+joten pätee.
+
+Right ID: 
+Jos m == Either' (Left x),
+m >>= f == m (aina)
+ja
+Jos m == Either' (Right x), niin laki pätee
+samankaltaisella päättelyllä kuin Maybe':lle.
+
+
+Associativity:
+Tämäkin menee lähes identtisesti Mayben' kanssa.
+
+Lait siis pätevät.
+
+
+-}
 -- (,)
 instance (Monoid r) => Monad (OmaTuple r) where
     return = pure
     OmaTuple (x, y) >>= f = case f y of OmaTuple (z, b) -> OmaTuple (x<>z , b)
--- (-> )
+{-
+Todistus:
+Left ID:
+return a on aina ->  OmaTuple (mempty, a) ja 
+koska mempty <> x == x, niin
+
+OmaTuple (mempty, a)  >>= k == k a,
+joten pätee.
+
+Right ID: 
+Jos m == OmaTuple (x, y),
+m >>= return == OmaTuple (mempty <> x, y) == m
+
+Laki pätee.
+
+
+
+Associativity:
+m ==  OmaTuple (x, y)
+* (k y = OmaTuple (z,b))
+* (h b = OmaTuple (s,c))
+1) (m >>= k) >>= h == OmaTuple (x <> z, b) >>= h ==
+    OmaTuple (x <> z <> s , c) 
+2) m >>= (\x -> k x >>= h) == (\x -> k x >>= h) y ==
+    k y >>= h ==  OmaTuple (x <> z <> s , c) 
+
+
+Lait siis pätevät.
+
+-}
+    -- (-> )
 
 instance Monad (OmaFunktio r) where
     return = pure 

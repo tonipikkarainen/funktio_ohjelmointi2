@@ -12,6 +12,7 @@ import Week4.Exercise3
 -- Ekspressiot voidaan evaluoida
 -- Week4.Exercise3 :sta löytyvällä
 -- deepEval funktiolla.
+--
 
 closedString :: String
 closedString = "let \
@@ -19,6 +20,7 @@ closedString = "let \
   \ three = 1 + two in let \
   \ nine = three * three in \
   \ 1 + three * (1 + nine)"
+
 
 openString :: String
 openString = "1 + undefined"
@@ -123,7 +125,7 @@ ident = do
     if ((x:y) == "let" || (x:y) == "in") 
         then 
             do
-            fail_oma
+            fail_oma -- empty
             return (x:y)
         else
             return (x:y)

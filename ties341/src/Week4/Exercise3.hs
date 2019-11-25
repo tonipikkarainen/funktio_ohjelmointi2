@@ -22,7 +22,7 @@ evalShallow x = unsafePerformIO (catch (seq x (pure (Just x)))
 -- catchin eka: (IO (Just x)) toka: 
 -- (\ e -> seq (e :: SomeException) (pure Nothing))
 
-
+ 
 --implement the corresponding constructions for deeply-embedded terms  
 data Expr = Add Expr Expr | Zero | Mul Expr Expr | One |
   Let String Expr Expr | Var String
@@ -48,7 +48,8 @@ closedDeep =
     (Let "nine" (Mul (Var "three") (Var "three")) 
     (Add One (Mul (Var "three") (Add One (Var "nine"))))))
 
-
+empty_map :: Map String Expr 
+empty_map = Map.fromList []
 
 evalDeep :: Num a => Expr -> Maybe a
 evalDeep x = unsafePerformIO (catch (seq (evalApuDeep x) (pure (Just (evalApuDeep x))))
@@ -62,10 +63,27 @@ evalApuDeep (Add y x) = (evalApuDeep y) + (evalApuDeep x)
 evalApuDeep (Mul y x) = (evalApuDeep y) * (evalApuDeep x)
 evalApuDeep (Let muuttuja m_sisalto lauseke) = evalApuDeep (sijoita muuttuja m_sisalto lauseke)
     
+-- Tässä tehty evalDeep fiksummin. 
+-- Tällä ei kuitenkaan suoraan saa käsiteltyä
+-- openDeep:n poikkeusta.
+-- Pitäisikö tähän tehdä undefinedille oma konstruktori, jos
+-- ei käytä unsafePerformIO tekniikkaa?
+evalDeep' :: Num a => Expr -> Map String Expr -> Maybe a
+evalDeep' ex vars = case ex of
+  Zero -> Just 0
+  One -> Just 1
+  Add y x -> (+) <$> (evalDeep' y vars) <*> (evalDeep' x vars)
+  Mul y x -> (*) <$> (evalDeep' y vars) <*> (evalDeep' x vars)
+  Let muuttuja m_sisalto lauseke  ->  evalDeep' lauseke (Map.insert muuttuja m_sisalto vars)
+  Var x -> case  (Map.lookup x vars) of 
+    Just y -> evalDeep' y vars
+    _      -> Nothing
 
+  
 -- Tämän avulla sijoitetaan muuttujien paikalle
 -- muuttujia vastaavat ekspressiot 
 -- Let - konstruktorin tapauksessa.
+-- TODO: Tämän voisi tehdä varmasti fiksummin!
 sijoita :: String -> Expr -> Expr -> Expr
 sijoita muuttuja sisalto lauseke = 
     case lauseke of 

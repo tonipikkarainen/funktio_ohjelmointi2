@@ -3,24 +3,42 @@ module Week4.Exercise2 where
 import Week2.Exercise2
 import Week3.Exercise2
 -- Coyoneda ja Cont puuttuu!
-{-
-Instances for Sum m n a, given instances for m and n.  (-)
-Instances for Product m n a, given instances for m and n. (+)
-Instances for Identity a. (+)
-Instances for Compose m n a, given instances for m and n. (-) ei ilmeisesti ole (-)
-Instances for Const a b. (-) tämäkään ei monadi?
-Instances for Proxy a.  (+)
-Instances for State a b. (+)
-Instances for Cont a b. (?)
-Instances for Star m a b, given instances for m. (+)
-Instances for Costar m a b. (+)
-Instances for Yoneda m a, given instances for m. (+)
-Instances for Coyoneda m a, given instances for m. (?)
--}
 
 instance (Monad m, Monad n) => Monad (Product m n) where
-    return = pure
+    return x = Pair (return x) (return x)
     Pair x y >>= f = Pair (x >>= fstPair . f) (y >>= sndPair . f)
+{-
+Todistus: 
+Left ID:
+
+return a >>= k == Pair (return a) (return a) >>= k 
+    Pair ((return a) >>= fstPair . f ) ((return a) >>= sndPair . f)
+    {- koska m ja n ovat monadeja, monadi-lait pätevät niille.-}
+    eli 
+    [((return a) >>= fstPair . f ) == (fstPair . f) a 
+    ((return a) >>= sndPair . f ) == (sndPair . f) a]
+    
+    == Pair ((fstPair . f) a)  ((sndPair . f) a) == f a 
+Laki pätee.
+
+Right ID:
+
+m == Pair x y 
+
+Pair x y >>= return == Pair (x >>= fstPair . return) (y >>= sndPair . return)==
+    {- Jos x, muokataan return:lla alkuperäiseen muotoon ja otetaan
+    ensimmäinen pari, tulos on x. Sama pätee y:lle. -} 
+    Pair x y == m
+    
+Associativity:
+
+m >>= (\x -> k x >>= h)  =  (m >>= k) >>= h
+
+Tämäkin pätee, sillä määrittelyssä hyödynnetään monadeja m ja n, joille laki pätevät.
+Ja jos laki pätevät monadeille m ja n, ne pätevät myös monadille Product.
+
+
+-}
 
 instance Monad Identity where
     return = pure
@@ -37,10 +55,10 @@ instance Monad (State a) where
 
 -- newtype Cont a b = Cont {runCont :: (b -> a) -> a}
 -- mistä saadaan b - f:ään?
---instance Monad (Cont a) where
---    return = pure
---    Cont x >>= f = Cont y where
---        y = \h -> runCont (f b) $
+instance Monad (Cont a) where
+    return = pure
+    Cont x >>= f = Cont y where
+        y = \h -> x $ (\k -> (runCont (f k)) h)
 
 -- star m a b :: a -> m b
 
@@ -61,8 +79,7 @@ instance (Monad m) => Monad (Yoneda m) where
         y = \z -> x id >>= \k -> runYoneda (f k) z 
 
 -- data Coyoneda m a = forall b. Coyoneda (b -> a) (m b)
-{-instance (Monad m) => Monad (Coyoneda m) where
-    return = pure
-    Coyoneda x y >>= f = Coyoneda id z where
-        unCoy (Coyoneda f g) = g
-        z = y >>=  (f . x) -}
+--instance (Monad m) => Monad (Coyoneda m) where
+--    return = pure
+--    Coyoneda x y >>= f = Coyoneda id z where
+--        z = y >>=  (f . x) 
