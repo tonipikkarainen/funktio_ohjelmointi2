@@ -64,10 +64,6 @@ evalApuDeep (Mul y x) = (evalApuDeep y) * (evalApuDeep x)
 evalApuDeep (Let muuttuja m_sisalto lauseke) = evalApuDeep (sijoita muuttuja m_sisalto lauseke)
     
 -- Tässä tehty evalDeep fiksummin. 
--- Tällä ei kuitenkaan suoraan saa käsiteltyä
--- openDeep:n poikkeusta.
--- Pitäisikö tähän tehdä undefinedille oma konstruktori, jos
--- ei käytä unsafePerformIO tekniikkaa?
 evalDeep' :: Num a => Expr -> Map String Expr -> Maybe a
 evalDeep' ex vars = case ex of
   Zero -> Just 0
