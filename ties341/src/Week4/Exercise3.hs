@@ -4,17 +4,14 @@ import Control.Exception
 import Data.Map (Map (..))
 import qualified Data.Map as Map
 import System.IO.Unsafe (unsafePerformIO)
--- Given a shallowly-embedded closed term representing 31
 
--- a shallowly-embedded open term
 openShallow :: Num a => a
 openShallow = 1 + undefined
---evaluator for shallowly-embedded terms
 
 evalShallow :: Num a => a -> Maybe a
 evalShallow x = unsafePerformIO (catch (seq x (pure (Just x)))
   (\ e -> seq (e :: SomeException) (pure Nothing)))
-
+-- note - to - self:
 -- unsafePerformIO ::  IO a -> a
 -- catch :: IO a -> (e -> IO a) -> IO a
 -- seq :: a -> b -> b  -- x (pure (Just x)) -> eli nostaa x:n
@@ -23,7 +20,6 @@ evalShallow x = unsafePerformIO (catch (seq x (pure (Just x)))
 -- (\ e -> seq (e :: SomeException) (pure Nothing))
 
  
---implement the corresponding constructions for deeply-embedded terms  
 data Expr = Add Expr Expr | Zero | Mul Expr Expr | One |
   Let String Expr Expr | Var String
   deriving Show
@@ -48,8 +44,7 @@ closedDeep =
     (Let "nine" (Mul (Var "three") (Var "three")) 
     (Add One (Mul (Var "three") (Add One (Var "nine"))))))
 
-empty_map :: Map String Expr 
-empty_map = Map.fromList []
+
 
 evalDeep :: Num a => Expr -> Maybe a
 evalDeep x = unsafePerformIO (catch (seq (evalApuDeep x) (pure (Just (evalApuDeep x))))

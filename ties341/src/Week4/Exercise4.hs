@@ -150,7 +150,7 @@ spaces = many (oneOf ['\t','\n','\v' ,'\f','\r',' '])
 -- # Just 31
 evaluate :: Num a => String -> Maybe a
 evaluate s = case (getParser expr) s of
-    Right (x,y) -> evalDeep y
+    Right (x,y) -> evalDeep' y mempty
     Left _ -> Nothing
 
 -- Kielioppi, jonka mukaan parsitaan:    

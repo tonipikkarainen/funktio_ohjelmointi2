@@ -3,7 +3,6 @@ module Week4.Exercise2 where
 import Week2.Exercise2
 import Week3.Exercise2
 
--- Mukana yksi todistus 
 
 instance (Monad m, Monad n) => Monad (Product m n) where
     return x = Pair (return x) (return x)
@@ -54,8 +53,7 @@ instance Monad (State a) where
     State x >>= f = State y where
         y = \z -> case x z of (t,s) -> runState (f t) s  
 
--- newtype Cont a b = Cont {runCont :: (b -> a) -> a}
--- mistä saadaan b - f:ään?
+
 instance Monad (Cont a) where
     return = pure
     Cont x >>= f = Cont y where
@@ -66,27 +64,25 @@ instance (Monad m) => Monad (Star m a) where
     return = pure
     Star x >>= f = Star y where
         y = \z -> (x z >>= \k -> (runStar (f k)) z )
---newtype Costar m a b = Costar {runCostar :: m a -> b}
+
+
 instance Monad (Costar m a) where
     return = pure
     Costar x >>= f = Costar y where
         y = \z -> runCostar (f (x z)) z
 
--- newtype Yoneda m a = Yoneda {runYoneda :: forall b. (a -> b) -> m b}
 instance (Monad m) => Monad (Yoneda m) where
     return = pure
     Yoneda x >>= f = Yoneda y where
         y = \z -> x id >>= \k -> runYoneda (f k) z 
 
 
--- data Coyoneda m a = forall b. Coyoneda (b -> a) (m b)
 instance (Monad m) => Monad (Coyoneda m) where
     return = pure
     Coyoneda x y >>= f = Coyoneda id z where
         z = y >>= lowerCoyoneda . f . x 
 
-liftCoyoneda :: f a -> Coyoneda f a
-liftCoyoneda = Coyoneda id
+
 
 lowerCoyoneda :: Functor f => Coyoneda f a -> f a
 lowerCoyoneda (Coyoneda f m) = fmap f m
