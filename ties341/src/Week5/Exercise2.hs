@@ -44,7 +44,7 @@ data Variable = Value | Counter | Cache
 data Problem = Loop | Bound Variable
   deriving Show
 -- Tämä tuottaa:  :: (Bounded a, Integral a) => (Either Problem a, Set Int)
--- Parempi, sillä tuotokseen jää myös joukko 
+-- Parempi, sillä tuotokseen jää myös joukko eli tila.
 checkCollatzSRE :: (Intlike a, Intlike b) =>
   a -> ExceptT Problem (ReaderT (Maybe Int) (State (Set a))) b
 checkCollatzSRE = let
@@ -106,8 +106,10 @@ checkCollatzERS = let
     Bound Cache -> mapStateT (local (const collatzBound)) (f n)
     _ -> (lift . lift) (throwE e)
 
+type InputInt = Int16    
+
 runCheckCollatz x = runState ((runReaderT (runExceptT (g x)) ) (Just maxBound)) Set.empty where
-  g :: Int -> ExceptT Problem (ReaderT (Maybe Int) (State (Set Int))) Int
+  g :: InputInt -> ExceptT Problem (ReaderT (Maybe Int) (State (Set InputInt))) Int
   g =  checkCollatzSRE
 
 

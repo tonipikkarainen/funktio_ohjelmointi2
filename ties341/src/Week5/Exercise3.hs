@@ -20,7 +20,7 @@ type that does not fix the stacking order, remove the
 explicit lifts and run the resulting program with the old 
 helper function.
 -}
-
+-- TODO: yritä ymmärtää instanssien käyttö paremmin!!!!
 foo :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b  
 foo =  let
     f :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b 
@@ -45,12 +45,10 @@ foo =  let
             if not (safeToCount q) then               
               throwError (Bound Counter) else            
               pure (count q) in                       
-    \ n -> f n
--- miten saadaan virheen tarkistus mukaan??
+    \ n -> catchError (f n) $ \ e -> case e of
+    Bound Cache -> (local (const collatzBound)) (f n)
+    _ -> throwError e
 
-        --catchError (f n) $ \ e -> case e of
-      --Bound Cache ->  mapExcept (local (const collatzBound)) (f n)
-      --_ ->  throwError e
 runCheckCollatz2 x = runState ((runReaderT (runExceptT (g x)) ) (Just maxBound)) Set.empty where
-  g :: Int8 -> ExceptT Problem (ReaderT (Maybe Int) (State (Set Int8))) Int
+  g :: InputInt -> ExceptT Problem (ReaderT (Maybe Int) (State (Set InputInt))) Int
   g =  foo  

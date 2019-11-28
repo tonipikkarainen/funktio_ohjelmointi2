@@ -25,4 +25,4 @@ executable ties341
     Week2.Exercise2
     Week2.Exercise3
     Week3.Exercise1
-  build-depends:       base >= 4.7 && < 5, containers, profunctors,mtl,transformers
+  build-depends:       base >= 4.7 && < 5, containers, profunctors,mtl,transformers, text, megaparsec
