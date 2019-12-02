@@ -4,7 +4,6 @@ import Data.List.NonEmpty (NonEmpty (..))
 import qualified Data.List.NonEmpty as NonEmpty
 import Data.Map (Map (..))
 import qualified Data.Map as Map
---import Week1.Exercise1
 import Week2.Exercise1
 import Week3.Exercise1
 
@@ -13,18 +12,18 @@ import Week3.Exercise1
 sequenceA :: Applicative f => t (f a) -> f (t a)
 foldMap :: Monoid m => (a -> m) -> t a -> m
 
-Instances for Bool.
+Instances for Bool. ei
 Instances for Maybe a.
 Instances for Either a b.
 Instances for (,) a b.
-Instances for Endo a.
-Instances for (->) a b and Op a b.
-Instances for ().
+Instances for Endo a. ei
+Instances for (->) a b and Op a b. ei
+Instances for ().  ei
 Instances for [] a.
 Instances for NonEmpty a.
-Instances for Void.
-Instances for IO a.
-Instances for Map k a.
+Instances for Void. ei 
+Instances for IO a. ei 
+Instances for Map k a. on
 -}
 
 instance Foldable Maybe' where
@@ -47,4 +46,47 @@ instance Traversable (Either' a) where
 
 --
 
+instance Foldable (OmaTuple a) where
+    foldMap f (OmaTuple (x,y)) = f y
 
+instance Traversable (OmaTuple a) where
+    sequenceA (OmaTuple (x,y)) = fmap (\z -> OmaTuple (x,z)) y
+
+--
+
+instance Foldable Lista where
+    foldMap f (Lista x) = mconcat (map f x)
+
+instance Traversable Lista where
+    sequenceA (Lista []) = pure (Lista [])
+    sequenceA (Lista (x:xs)) = f <$> x <*> (sequenceA (Lista xs)) where
+        f y (Lista x) =  Lista (y:x)
+--
+
+instance Foldable OmaNonEmpty where
+    foldMap f (OmaNonEmpty (x :| xs)) = f x <> (foldMap f (Lista xs))
+
+instance Traversable OmaNonEmpty where
+    sequenceA (OmaNonEmpty (x :| [])) = f <$> x <*> pure (Lista []) where
+        f y (Lista x) = OmaNonEmpty (y :| x )
+    sequenceA (OmaNonEmpty (x :| (z:zs))) = g <$> x <*> (sequenceA (Lista (z:zs))) where
+        g x (Lista xs) = OmaNonEmpty (x :| xs)
+
+
+-- 
+
+instance Foldable (OmaMap k) where
+    foldMap f (OmaMap x) = foldMap f (Lista (Map.elems x))
+
+instance (Ord k) => Traversable (OmaMap k) where
+    sequenceA (OmaMap x) = uusiOmaMap  where
+        z = Map.elems x
+        lista = sequenceA z
+        keys = Map.keys x
+        uusi = fmap (zip keys) lista
+        uusi_map = fmap (Map.fromList) uusi
+        uusiOmaMap = fmap (OmaMap) uusi_map
+
+
+
+    
