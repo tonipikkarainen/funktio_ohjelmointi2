@@ -48,7 +48,8 @@ foo =  let
     \ n -> catchError (f n) $ \ e -> case e of
     Bound Cache -> (local (const collatzBound)) (f n)
     _ -> throwError e
-
+    
+runCheckCollatz2 :: InputInt -> (Either Problem Int, Set InputInt)
 runCheckCollatz2 x = runState ((runReaderT (runExceptT (g x)) ) (Just maxBound)) Set.empty where
   g :: InputInt -> ExceptT Problem (ReaderT (Maybe Int) (State (Set InputInt))) Int
   g =  foo  
