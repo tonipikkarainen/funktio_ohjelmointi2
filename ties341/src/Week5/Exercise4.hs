@@ -3,6 +3,7 @@ module Week5.Exercise4 where
 import Data.Text hiding (length,head)
 import Data.Text.Read
 import Text.Megaparsec
+import Text.Read
 import Text.Megaparsec.Char
 import Data.Void
 import Control.Monad.Trans.Class
@@ -25,25 +26,32 @@ import Control.Concurrent
 -- Tekijä: Toni Pikkarainen
 -- 2.12.2019
 
+-- TODO: Int:n lukeminen tiedostosta ylivuodon käsittelyllä.
+-- nyt toteutettu readmaybellä - ylivuoto ei tässä aiheuta
+-- ongelmia sillä negatiivinen luku pysäyttää kyseisen funktion
+-- suorituksen.
 
 
 
-
--- Anna polku konfiguraatiotiedostoon, josta
+-- Anna kysyttäessä polku konfiguraatiotiedostoon, josta
 -- luetaan tutkittavat palvelut.
-main :: String ->  IO ()
-main s = do
-  s <- readFile s--"/Users/tonipikkarainen/master_degree/funktio2/ties341/src/Week5/addresses.cfg"
-  seq (length s) (pure ())
-  let hosts = (parse parseManyHost "" s)  
-  case hosts of 
-    Right (x:xs) -> 
-        do
-            manager <- newManager tlsManagerSettings
-            requestfunktio (x:xs) manager
-    Left _ -> do 
-        print "Something wrong"
-        setSGR [Reset]
+main :: IO ()
+main  = do
+  putStrLn "Anna luettavan tiedoston polku:" 
+  polku <- getLine
+  E.catch (do 
+    s <- readFile polku
+    seq (length s) (pure ())
+    let hosts = (parse parseManyHost "" s)
+    case hosts of 
+        Right (x:xs) -> 
+            do
+                manager <- newManager tlsManagerSettings
+                requestfunktio (x:xs) manager
+        Left _ -> do 
+            print "Something wrong"
+            setSGR [Reset]) $ \e -> seq (e :: E.SomeException) (putStrLn "Tiedostoa ei löydy")
+  
    
 
 type Parser = Parsec Void String
@@ -118,7 +126,6 @@ parseManyHost = do
 --testijson = "{{url = \"https://example.com/\",numberOfRepeats = 5, useColor = True}{url = \"https://example.com/\",numberOfRepeats = 5, useColor = True}}"
 
 
--- TODO: mieti polku tiedostolle!
 -- TODO: responsetimeout:in säätäminen
 
 
@@ -142,8 +149,9 @@ requestfunktio (x:xs) man = do
 -- arvo on askelten määrä.
 tutki :: (MonadState (Int) m, MonadIO m) => Manager -> Int -> (Text, Text, Text) -> m Int
 tutki man toistot (url,numberLimit,color) = do
-    let raja = read $ unpack numberLimit :: Int -- Voiko tämä epäonnistua?
-    if toistot >= raja then pure ( toistot )  -- Ehkä ei, koska kaatuu tulee esiin todennäköisesti parserissa, mutta silti on pikkuisen pelottava.
+    let x = readMaybe $ unpack numberLimit :: Maybe Int
+    let raja = if x == Nothing then 1 else case x of (Just y) -> y -- voi tulla ylivuoto liian isolla syötteellä mutta tässä tapauksessa ei aiheuta ongelmia.
+    if toistot >= raja then pure ( toistot )  -- jos raja menee negatiiviseksi tämä pysähtyy heti.
         else do 
             request <- liftIO (parseRequest (unpack url))-- Tässä ei ilmeisesti päästä lift:stä täysin eroon?
             let req = request 

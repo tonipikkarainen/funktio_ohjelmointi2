@@ -7,24 +7,8 @@ import qualified Data.Map as Map
 import Week2.Exercise1
 import Week3.Exercise1
 
-
-{-
-sequenceA :: Applicative f => t (f a) -> f (t a)
-foldMap :: Monoid m => (a -> m) -> t a -> m
-
-Instances for Bool. ei
-Instances for Maybe a.
-Instances for Either a b.
-Instances for (,) a b.
-Instances for Endo a. ei
-Instances for (->) a b and Op a b. ei
-Instances for ().  ei
-Instances for [] a.
-Instances for NonEmpty a.
-Instances for Void. ei 
-Instances for IO a. ei 
-Instances for Map k a. on
--}
+-- Todistukset puuttuvat - käytin aikaa
+-- muihin tehtäviin.
 
 instance Foldable Maybe' where
     foldMap f (Maybe' (Just x)) = f x
