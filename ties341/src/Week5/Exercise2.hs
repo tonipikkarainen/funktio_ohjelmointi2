@@ -108,7 +108,7 @@ checkCollatzERS = let
 
 type InputInt = Int16    
 
-runCheckCollatz x = runState ((runReaderT (runExceptT (g x)) ) (Just maxBound)) Set.empty where
+runCheckCollatz x = runState ((runReaderT (runExceptT (g x)) ) (Nothing)) Set.empty where
   g :: InputInt -> ExceptT Problem (ReaderT (Maybe Int) (State (Set InputInt))) Int
   g =  checkCollatzSRE
 
