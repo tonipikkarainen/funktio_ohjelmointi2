@@ -20,7 +20,10 @@ import Control.Monad.IO.Class
 import System.Console.ANSI
 import Control.Concurrent
 
-
+-- Testataan, mikä statuskoodi palvelimelta saadaan
+-- vastauksena http - HEAD -requestiin.
+-- Tekijä: Toni Pikkarainen
+-- 2.12.2019
 
 
 
@@ -140,7 +143,7 @@ requestfunktio (x:xs) man = do
 tutki :: (MonadState (Int) m, MonadIO m) => Manager -> Int -> (Text, Text, Text) -> m Int
 tutki man toistot (url,numberLimit,color) = do
     let raja = read $ unpack numberLimit :: Int -- Voiko tämä epäonnistua?
-    if toistot >= raja then pure ( toistot ) 
+    if toistot >= raja then pure ( toistot )  -- Ehkä ei, koska kaatuu tulee esiin todennäköisesti parserissa, mutta silti on pikkuisen pelottava.
         else do 
             request <- liftIO (parseRequest (unpack url))-- Tässä ei ilmeisesti päästä lift:stä täysin eroon?
             let req = request 
