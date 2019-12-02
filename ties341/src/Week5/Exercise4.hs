@@ -150,7 +150,9 @@ requestfunktio (x:xs) man = do
 tutki :: (MonadState (Int) m, MonadIO m) => Manager -> Int -> (Text, Text, Text) -> m Int
 tutki man toistot (url,numberLimit,color) = do
     let x = readMaybe $ unpack numberLimit :: Maybe Int
-    let raja = if x == Nothing then 1 else case x of (Just y) -> y -- voi tulla ylivuoto liian isolla syötteellä mutta tässä tapauksessa ei aiheuta ongelmia.
+    let raja = case x of 
+         Nothing  -> 1 
+         Just y   -> y     -- voi tulla ylivuoto liian isolla syötteellä mutta tässä tapauksessa ei aiheuta ongelmia.
     if toistot >= raja then pure ( toistot )  -- jos raja menee negatiiviseksi tämä pysähtyy heti.
         else do 
             request <- liftIO (parseRequest (unpack url))-- Tässä ei ilmeisesti päästä lift:stä täysin eroon?
