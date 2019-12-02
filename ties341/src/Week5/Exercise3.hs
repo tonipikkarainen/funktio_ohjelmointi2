@@ -21,8 +21,8 @@ explicit lifts and run the resulting program with the old
 helper function.
 -}
 
-foo :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b  
-foo =  let
+collatz_func :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b  
+collatz_func=  let
     f :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b 
     f n = do
       ps <- get                         
@@ -52,4 +52,4 @@ foo =  let
 runCheckCollatz2 :: InputInt -> (Either Problem Int, Set InputInt)
 runCheckCollatz2 x = runState ((runReaderT (runExceptT (g x)) ) (Just maxBound)) Set.empty where
   g :: InputInt -> ExceptT Problem (ReaderT (Maybe Int) (State (Set InputInt))) Int
-  g =  foo  
+  g =  collatz_func  
