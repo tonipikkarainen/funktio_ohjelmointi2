@@ -20,7 +20,7 @@ type that does not fix the stacking order, remove the
 explicit lifts and run the resulting program with the old 
 helper function.
 -}
--- TODO: yritä ymmärtää instanssien käyttö paremmin!!!!
+
 foo :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b  
 foo =  let
     f :: (Intlike a, Intlike b, MonadReader (Maybe Int) m, MonadError Problem m, MonadState (Set a) m) => a -> m b 
