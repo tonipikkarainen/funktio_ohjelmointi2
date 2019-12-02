@@ -58,7 +58,7 @@ type Parser = Parsec Void String
 
 
 decimal' :: Parser [Char]
-decimal' = many (oneOf ['1'..'9'])
+decimal' = many (oneOf ['0'..'9'])
 
 onkoBool :: Parser [Char]
 onkoBool = chunk "True" <|> chunk "False"
