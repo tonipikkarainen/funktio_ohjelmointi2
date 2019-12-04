@@ -9,6 +9,7 @@ import Data.Functor.Identity
 --traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
 newtype WrappedTraversable m a = WrapTraversable {unwrapTraversable :: m a}
 -- fmap :: Functor f => (a -> b) -> f a -> f b
+-- use traverse!! 
 instance Traversable m => Functor (WrappedTraversable m) where
   fmap f (WrapTraversable xs) = WrapTraversable (fmap f xs)--WrapTraversable (traverse f xs)
 

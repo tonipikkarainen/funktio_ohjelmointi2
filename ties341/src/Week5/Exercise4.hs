@@ -126,7 +126,6 @@ parseManyHost = do
 --testijson = "{{url = \"https://example.com/\",numberOfRepeats = 5, useColor = True}{url = \"https://example.com/\",numberOfRepeats = 5, useColor = True}}"
 
 
--- TODO: responsetimeout:in säätäminen
 
 
 
@@ -159,7 +158,8 @@ tutki man toistot (url,numberLimit,color) = do
             let req = request 
                     { method = C.pack "HEAD" 
                     ,requestHeaders = [(CI.mk $ C.pack "Accept", C.pack  "*/*") ,
-                     (CI.mk $ C.pack "User-Agent",  C.pack "ties341/0.0.0")]}
+                     (CI.mk $ C.pack "User-Agent",  C.pack "ties341/0.0.0")], 
+                     responseTimeout = (responseTimeoutMicro 10000000)}
             stat <- liftIO ( eval req man )-- eikä tässä
             if stat == 200 || stat == (600) then do
                 S.put (stat)
@@ -170,11 +170,10 @@ tutki man toistot (url,numberLimit,color) = do
                     tutki man (toistot + 1) (url,numberLimit,color)
 
 -- Tehdään request ja palautetaan statuskoodi
--- Jos ei saada yhteyttä ja tulee poikkeus, palautetaan -1.
+-- Jos ei saada yhteyttä ja tulee poikkeus, palautetaan 600.
 eval :: Request -> Manager -> IO Int                   
 eval q m = do
     E.catch (do 
                 b <- (httpNoBody q m)
                 pure (statusCode (responseStatus b))) $ \ e -> seq (e :: HttpException) (pure (600))
-
 
