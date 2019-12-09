@@ -9,29 +9,14 @@ import Data.Functor.Identity
 --traverse :: Applicative f => (a -> f b) -> t a -> f (t b)
 newtype WrappedTraversable m a = WrapTraversable {unwrapTraversable :: m a}
 -- fmap :: Functor f => (a -> b) -> f a -> f b
--- use traverse!! 
+
 instance Traversable m => Functor (WrappedTraversable m) where
-  fmap f (WrapTraversable xs) = WrapTraversable (fmap f xs)--WrapTraversable (traverse f xs)
-
+  fmap f = runIdentity . traverse (Identity . f)
+  
 instance Traversable m => Foldable (WrappedTraversable m) where
-  foldMap f (WrapTraversable xs) = (foldMap f xs)
-
+  foldMap f = getConst . traverse (Const . f)
+  
 instance Traversable m => Traversable (WrappedTraversable m) where
   sequenceA   = traverse id
   traverse k (WrapTraversable xs) = WrapTraversable <$> (traverse k xs)
 
-{-
-  The base library functions pertaining to foldables and 
-  traversables are related to each other in several different 
-  ways.
-  However, this is obscured by the type class hierarchy and the 
-  clever default 
-definitions it hides.
-
-  Implement the instances that witness the relations between 
-  the different functions. While doing so, try to find a way 
-  to avoid using the unwrapped functions with the respective 
-  wrappers.
-  
-  This is trickier than it might seem, so be patient!
-  -}
