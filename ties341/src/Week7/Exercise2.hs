@@ -3,12 +3,12 @@
 
 module Week7.Exercise2 where
 
---import Week1.Exercise1
 import Data.Foldable.Deriving (deriveFoldable)
 import Data.Functor.Classes
 import Data.Functor.Deriving (deriveFunctor)
 import Data.Traversable.Deriving (deriveTraversable)
 import Text.Show.Deriving (deriveShow1)
+import Data.Void
 
 newtype Fix m = Fix {unFix :: m (Fix m)}
 -- (getBool . unFix) (x :: Bool')) 
@@ -25,27 +25,27 @@ newtype Fix m = Fix {unFix :: m (Fix m)}
 data BoolF a = BoolIn {getBool :: Bool} deriving (Show, Eq, Read)
 $(deriveShow1 ''BoolF)
 
-type Bool' = Fix BoolF
+type Bool'   = Fix BoolF
 
 -- Maybe
 data MaybeF a r = MaybeIn {getMaybe :: Maybe a}
 $(deriveShow1 ''MaybeF)
 
-type Maybe' a = Fix (MaybeF a)
+type Maybe' a   = Fix (MaybeF a)
 
 
 -- Either
 data EitherF a b r = EitherIn {getEither :: Either a b}
 $(deriveShow1 ''EitherF)
 
-type Either' a b = Fix (EitherF a b)
+type Either' a b   = Fix (EitherF a b)
 
 -- ()
 
 data UnitF a = UnitIn {getUnit :: ()}
 $(deriveShow1 ''UnitF)
 
-type Unit' = Fix (UnitF)
+type Unit'   = Fix (UnitF)
 
 -- [] a
 
@@ -55,7 +55,7 @@ $(deriveFunctor ''ListF)
 $(deriveShow1 ''ListF)
 $(deriveTraversable ''ListF)
 
-type List' a = Fix (ListF a)
+type List' a   = Fix (ListF a)
 
 
 val :: List' Int
@@ -70,6 +70,62 @@ lenAlg NilF = 0
 -- Esim. cata lenAlg val == 2
 cata :: Functor f => (f a -> a) -> Fix f -> a
 cata alg = alg . fmap (cata alg) . unFix
+
+-- Void
+data VoidF r = VoidF {getVoid :: Void }
+type Void'   = Fix VoidF
+
+-- Identity a
+data IdentityF a r = IdentityF {runIdentity :: a}
+$(deriveShow1 ''IdentityF)
+$(deriveFunctor ''IdentityF)
+
+
+type Identity' a   = Fix (IdentityF a) 
+
+-- data Stream a = a :< Stream a
+-- Stream
+
+data StreamF a r = a :> r 
+type Stream' a   = Fix (StreamF a)
+
+-- Tree
+-- type Forest a = [Tree a]
+-- data Tree a = Node	{rootLabel :: a,	subForest :: Forest a}
+
+data TreeF a r = NodeF {rootLabel :: a, subForest :: [r] }
+type Tree' a   = Fix (TreeF a)
+
+
+-- Expr
+data ExprF r = Add r r   
+             | Zero            
+             | Mul r r         
+             | One              
+             | Let String r r  
+             | Var String  
+
+$(deriveFoldable ''ExprF)
+$(deriveFunctor ''ExprF)
+$(deriveShow1 ''ExprF)
+$(deriveTraversable ''ExprF)
+
+type Expr' = Fix ExprF
+
+-- Free
+data FreeF f a r = PureF a | FreeF (f r) 
+type Free' f a   = Fix (FreeF f a)
+
+-- Cofree
+data CofreeF f a r =  a :< (f r)
+type  Cofree' f a  = Fix (CofreeF f a)
+
+
+-- Fix m
+data FixF m r = FixF {unFixF :: m r}
+type Fix' m   = Fix (FixF m)
+
+
 
 -- | We can derive a `Show` instance for `Fix` by
 --
