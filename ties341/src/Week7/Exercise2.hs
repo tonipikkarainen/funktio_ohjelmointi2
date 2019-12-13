@@ -11,16 +11,65 @@ import Data.Traversable.Deriving (deriveTraversable)
 import Text.Show.Deriving (deriveShow1)
 
 newtype Fix m = Fix {unFix :: m (Fix m)}
-
-data BoolF a = BoolF {getBool :: Bool} deriving (Show, Eq, Read)
-$(deriveShow1 ''BoolF)
-
--- getBool (unFix (x :: Bool')) 
+-- (getBool . unFix) (x :: Bool')) 
+--
 -- Tuolla tavalla saadaan Bool ulos
 -- Fix (BoolF True) :: Bool'
+-- tässä tullaan tekemään se, että
+-- BoolF:n argumentti a korvataan
+-- Fix BoolF:llä
+-- Jolloin BoolF (Fix BoolF) = BoolF
+-- parametri ei vaikuta tulokseen.
+
+-- Bool
+data BoolF a = BoolIn {getBool :: Bool} deriving (Show, Eq, Read)
+$(deriveShow1 ''BoolF)
+
 type Bool' = Fix BoolF
 
+-- Maybe
+data MaybeF a r = MaybeIn {getMaybe :: Maybe a}
+$(deriveShow1 ''MaybeF)
 
+type Maybe' a = Fix (MaybeF a)
+
+
+-- Either
+data EitherF a b r = EitherIn {getEither :: Either a b}
+$(deriveShow1 ''EitherF)
+
+type Either' a b = Fix (EitherF a b)
+
+-- ()
+
+data UnitF a = UnitIn {getUnit :: ()}
+$(deriveShow1 ''UnitF)
+
+type Unit' = Fix (UnitF)
+
+-- [] a
+
+data ListF a r = NilF | ConsF a r deriving (Show, Eq, Read)
+$(deriveFoldable ''ListF)
+$(deriveFunctor ''ListF)
+$(deriveShow1 ''ListF)
+$(deriveTraversable ''ListF)
+
+type List' a = Fix (ListF a)
+
+
+val :: List' Int
+val = Fix (ConsF 1 (Fix (ConsF 20 (Fix NilF))))
+
+lenAlg :: ListF e Int -> Int
+lenAlg (ConsF e n) = n + 1
+lenAlg NilF = 0
+
+-- Tällä voidaan testata 
+-- erilaisia algebroja.
+-- Esim. cata lenAlg val == 2
+cata :: Functor f => (f a -> a) -> Fix f -> a
+cata alg = alg . fmap (cata alg) . unFix
 
 -- | We can derive a `Show` instance for `Fix` by
 --
@@ -85,10 +134,3 @@ instance Show1 m => Show (Fix m) where
 #endif
 #endif
 #endif
-
-
---newtype UusiBool = UB (Fix BoolF)
-
-
-
---newtype Bot = Bot Bot

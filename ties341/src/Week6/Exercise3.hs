@@ -11,7 +11,13 @@ import Data.Void
 -- (*) on (,)
 -- exponentiation on ( -> )
 
-
+-- Tässä käytetään Either ja tuple
+-- Onko niin, että voitaisiin summatyyppinä 
+-- käyttää mitä tahansa summatyyppiä:
+-- vaikka data a b c = First a | Second b | Third c
+-- ja samat lait pätisivät?
+-- Silloin tuo tietty ilmentäisi kolmen 
+-- alkion summaa?
 
 -- equivalence is reflexive
 f_eqrefl :: (a -> a)
