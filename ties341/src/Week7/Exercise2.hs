@@ -14,15 +14,6 @@ import Data.Stream.Infinite
 
 
 newtype Fix m = Fix {unFix :: m (Fix m)}
--- (getBool . unFix) (x :: Bool')) 
---
--- Tuolla tavalla saadaan Bool ulos
--- Fix (BoolF True) :: Bool'
--- tässä tullaan tekemään se, että
--- BoolF:n argumentti a korvataan
--- Fix BoolF:llä
--- Jolloin BoolF (Fix BoolF) = BoolF
--- parametri ei vaikuta tulokseen.
 
 -- Bool
 data BoolF a = TrueF | FalseF deriving (Show, Eq, Read)

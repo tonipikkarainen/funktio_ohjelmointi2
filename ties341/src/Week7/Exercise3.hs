@@ -33,26 +33,6 @@ closedDeepBad :: Expr
 closedDeepBad = case (getParser expr) closedStringBad of
   Left e -> error (show e)
   Right (y,x) -> x
-{-
-data Expr = Add Expr Expr | Zero | Mul Expr Expr | One |
-  Let String Expr Expr | Var String
-  deriving Show
-
-
-closedDeepBad :: Expr
-closedDeepBad = Let "two" (Add One One) $
-   Let "three" (Mul One (Add One (Mul (Var "two") One))) $
-   Let "five" (Let "four" (Mul (Var "two") (Var "two")) $
-     Add One (Var "four")) $
-   Let "six" (Let "seven" (Add One (Var "six")) $
-     Mul (Var "two") (Var "three")) $
-   Let "eight" (Mul (Var "two") (Var "four")) $
-   Let "nine" (Add Zero (Mul (Var "three") (Add (Var "three") Zero))) $
-   Add (Add (Mul Zero (Var "five")) One)
-     (Add (Mul (Var "three") (Add One (Var "nine")))
-       (Mul (Var "eight") Zero))
--}
-
        
 optimize :: Expr -> Expr
 optimize = (appEndo . foldMap Endo) [elimDead,
@@ -64,6 +44,16 @@ optimizePasses n = (appEndo . stimesMonoid n . Endo) optimize
 
 -- Omat funktiot:
 -- True jos ei ole muuttujia tai viittauksia muuttujiin.
+
+breadth :: Expr -> Int
+breadth ex = case ex of
+  Var x -> 0
+  One  ->  0
+  Zero ->  0
+  Add x y -> 2 + (breadth x) + (breadth y)
+  Mul x y -> 2 + (breadth x) + (breadth y)
+  Let s x y -> 2 + (breadth x) + (breadth y)
+
 isSimple :: Expr -> Bool
 isSimple e = case e of
     Zero ->  True
@@ -106,6 +96,7 @@ absorbZeroMul e = case e of
 -- jos ei löydy niin vaihdetaan let:in tilalle 
 -- lauseke (toinen ekspressio)
 -- TODO: järkevämpi toteutus
+-- Ensin substVar ?
 elimDead :: Expr -> Expr
 elimDead e = case e of
     Add x y -> Add (elimDead x) (elimDead y)
@@ -124,37 +115,11 @@ elimDead e = case e of
             Mul x y -> sisaltaa x s || sisaltaa y s
             Let u x y -> if u == s then False else (sisaltaa y s || sisaltaa x s)
 
---elimDead' :: Map String Expr  -> Expr -> Expr
---elimDead' vars e = case e of 
-
--- ei oikein..
-{-
-foldConst :: Expr -> Expr
-foldConst e = case e of
-    Add x y -> Add (foldConst x) (foldConst y)
-    Mul x y -> Mul (foldConst x) (foldConst y)
-    Let s x y -> foldConst (substVar s x y)
-    x   -> x
--}
--- Mitä tehdään jos uuden samannimisen muuttujan määrittelyssä
--- korvattava muuttuja? Nyt sijoitetaan sen paikalle aikaisemmin
--- määritellyn muuttujan runko.
-{-
-substVar :: String -> Expr -> Expr -> Expr
-substVar var e lauseke = case lauseke of 
-    Var x -> if x == var then e else Var x 
-    Add x y -> Add (substVar var e x) (substVar var e y)
-    Mul x y -> Mul (substVar var e x) (substVar var e y)
-    Let u x y -> if u == var then Let u (substVar var e x) y 
-                            else Let u (substVar var e x) (substVar var e y)
-    x -> x
+-- The function breadth of type Expr -> Int should find the 
+-- number of subexpressions in the expression. 
+-- The resulting size should be unity for a constant.
 
 
-substVars :: Map String Expr -> Expr -> Expr
-substVars m lauseke = case Map.toList m of 
-    [] -> lauseke
-    (x,y):xs -> substVar x y lauseke
--}
 -- | An improved version of the `showIntAtBase` function
 -- from the `Numeric` module of the `base` package.
 showIntAtBase' :: forall a. Integral a => a -> (Int -> Char) -> a -> ShowS
