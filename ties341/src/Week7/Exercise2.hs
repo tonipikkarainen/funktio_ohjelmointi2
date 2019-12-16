@@ -9,6 +9,9 @@ import Data.Functor.Deriving (deriveFunctor)
 import Data.Traversable.Deriving (deriveTraversable)
 import Text.Show.Deriving (deriveShow1)
 import Data.Void
+import Data.Stream.Infinite
+
+
 
 newtype Fix m = Fix {unFix :: m (Fix m)}
 -- (getBool . unFix) (x :: Bool')) 
@@ -27,11 +30,29 @@ $(deriveShow1 ''BoolF)
 
 type Bool'   = Fix BoolF
 
+toBool :: Bool' -> Bool
+toBool x = case x of 
+  Fix TrueF -> True
+  Fix FalseF -> False
+
+fromBool :: Bool -> Bool'
+fromBool x = case x of
+  True -> Fix TrueF
+  False -> Fix FalseF
+
+-- (1) Päästään kulkemaan edestakaisin menettämättä informaatiota.
+-- Bool' ja Bool ovat siis isomorfiset.
+
+
 -- Maybe
 data MaybeF a r = Juuri a | Ei
 $(deriveShow1 ''MaybeF)
 
 type Maybe' a   = Fix (MaybeF a)
+
+-- Samanlainen isomorfismi kuin kohdassa 1
+-- voidaan helposti kirjoittaa myös 
+-- Maybe' :n ja Maybe:n välille.
 
 
 -- Either
@@ -40,12 +61,21 @@ $(deriveShow1 ''EitherF)
 
 type Either' a b   = Fix (EitherF a b)
 
+-- Samanlainen isomorfismi kuin kohdassa 1
+-- voidaan helposti kirjoittaa myös 
+-- Either' :n ja Either:n välille.
+
 -- ()
 
 data UnitF a = UnitF
 $(deriveShow1 ''UnitF)
 
 type Unit'   = Fix (UnitF)
+
+-- Samanlainen isomorfismi kuin kohdassa 1
+-- voidaan helposti kirjoittaa myös 
+-- Unit' :n ja ():n välille.
+
 
 -- [] a
 
@@ -57,10 +87,24 @@ $(deriveTraversable ''ListF)
 
 type List' a   = Fix (ListF a)
 
+toList :: List' a -> [a]
+toList xs = case xs of
+  Fix NilF -> []
+  Fix (ConsF x y) -> x : toList y 
 
+fromList ::  [a] -> List' a 
+fromList xs = case xs of
+  [] -> Fix NilF
+  y:ys -> Fix (ConsF y (fromList ys))
+
+-- (5) Päästään kulkemaan edestakaisin menettämättä informaatiota.
+-- List' ja [] ovat siis isomorfiset.
+
+-- Testiarvo
 val :: List' Int
 val = Fix (ConsF 1 (Fix (ConsF 20 (Fix NilF))))
 
+-- Voidaan laskea myös List':n pituus:
 lenAlg :: ListF e Int -> Int
 lenAlg (ConsF e n) = n + 1
 lenAlg NilF = 0
@@ -71,39 +115,55 @@ lenAlg NilF = 0
 cata :: Functor f => (f a -> a) -> Fix f -> a
 cata alg = alg . fmap (cata alg) . unFix
 
+
 -- Void
 data VoidF r 
 type Void'   = Fix VoidF
 
+-- Void ei sisällä informaatiota eikä myöskään Void'.
+
+
+
 -- Identity a
-data IdentityF a r = IdentityF {runIdentity :: a}
+data IdentityF a r = IdentityF {runIdentityF :: a}
 $(deriveShow1 ''IdentityF)
 $(deriveFunctor ''IdentityF)
 
 
 type Identity' a   = Fix (IdentityF a) 
 
+-- Tämäkin saataisiin helposti muunnettua Identityksi.
+
 -- data Stream a = a :< Stream a
 -- Stream
 
-data StreamF a r = a :> r 
+data StreamF a r = a :|> r 
 type Stream' a   = Fix (StreamF a)
 
+toStream :: Stream' a -> Stream a 
+toStream (Fix (x :|> y)) = x :> toStream y
+
+fromStream :: Stream a -> Stream' a
+fromStream (x :> y) = Fix (x :|> (fromStream y)) 
+
+-- (8) Päästään kulkemaan edestakaisin menettämättä informaatiota.
+-- Stream' ja Stream ovat siis isomorfiset.
+
 -- Tree
--- type Forest a = [Tree a]
--- data Tree a = Node	{rootLabel :: a,	subForest :: Forest a}
 
 data TreeF a r = NodeF {rootLabel :: a, subForest :: [r] }
 type Tree' a   = Fix (TreeF a)
 
+-- Fix : n avulla muodostettu tyyppi tehty samoin kuin
+-- muissa kohdissa.
 
 -- Expr
-data ExprF r = Add r r   
-             | Zero            
-             | Mul r r         
-             | One              
-             | Let String r r  
-             | Var String  
+data ExprF r = AddF r r   
+             | ZeroF            
+             | MulF r r         
+             | OneF              
+             | LetF String r r  
+             | VarF String  
 
 $(deriveFoldable ''ExprF)
 $(deriveFunctor ''ExprF)
@@ -112,19 +172,39 @@ $(deriveTraversable ''ExprF)
 
 type Expr' = Fix ExprF
 
+pattern Add' :: Expr' -> Expr' -> Expr'
+pattern Add' x y = Fix (AddF x y)
+
+pattern Mul' :: Expr' -> Expr' -> Expr'
+pattern Mul' x y = Fix (MulF x y)
+
+
+-- Nyt esim. :
+-- Add' (Mul' (Fix OneF) (Fix ZeroF)) (Fix OneF) 
+-- tuottaa oikean näköisen rakenteen:
+-- Fix (AddF (Fix (MulF (Fix OneF) (Fix ZeroF))) (Fix OneF))
+
+
 -- Free
 data FreeF f a r = PureF a | FreeF (f r) 
 type Free' f a   = Fix (FreeF f a)
+
+-- Fix : n avulla muodostettu tyyppi tehty samoin kuin
+-- muissa kohdissa.
 
 -- Cofree
 data CofreeF f a r =  a :< (f r)
 type  Cofree' f a  = Fix (CofreeF f a)
 
+-- Fix : n avulla muodostettu tyyppi tehty samoin kuin
+-- muissa kohdissa.
 
 -- Fix m
 data FixF m r = FixF {unFixF :: m r}
 type Fix' m   = Fix (FixF m)
 
+-- Fix : n avulla muodostettu tyyppi tehty samoin kuin
+-- muissa kohdissa.
 
 
 -- | We can derive a `Show` instance for `Fix` by

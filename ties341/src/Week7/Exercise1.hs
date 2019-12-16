@@ -20,11 +20,10 @@ redefined_append   = fix (\f xs ys -> case xs of
                             []     -> ys
                             (z:zs) -> z : (f zs ys))
 
--- onko (++) - käyttö tässä ok?
-redefined_reverse :: [a] -> [a]
-redefined_reverse = fix (\f xs -> case xs of
-                            []     -> []
-                            (y:ys) -> f ys ++ [y])
+redefined_reverse ::[a] -> [a]
+redefined_reverse = fix (\g xs ys -> case ys of
+    [] -> xs
+    (y:ys) -> g (y:xs) ys) $ [] 
 
 
 redefined_repeat :: a -> [a]
