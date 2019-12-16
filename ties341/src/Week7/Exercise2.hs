@@ -22,27 +22,27 @@ newtype Fix m = Fix {unFix :: m (Fix m)}
 -- parametri ei vaikuta tulokseen.
 
 -- Bool
-data BoolF a = BoolIn {getBool :: Bool} deriving (Show, Eq, Read)
+data BoolF a = TrueF | FalseF deriving (Show, Eq, Read)
 $(deriveShow1 ''BoolF)
 
 type Bool'   = Fix BoolF
 
 -- Maybe
-data MaybeF a r = MaybeIn {getMaybe :: Maybe a}
+data MaybeF a r = Juuri a | Ei
 $(deriveShow1 ''MaybeF)
 
 type Maybe' a   = Fix (MaybeF a)
 
 
 -- Either
-data EitherF a b r = EitherIn {getEither :: Either a b}
+data EitherF a b r = Vasen a | Oikea b
 $(deriveShow1 ''EitherF)
 
 type Either' a b   = Fix (EitherF a b)
 
 -- ()
 
-data UnitF a = UnitIn {getUnit :: ()}
+data UnitF a = UnitF
 $(deriveShow1 ''UnitF)
 
 type Unit'   = Fix (UnitF)
@@ -72,7 +72,7 @@ cata :: Functor f => (f a -> a) -> Fix f -> a
 cata alg = alg . fmap (cata alg) . unFix
 
 -- Void
-data VoidF r = VoidF {getVoid :: Void }
+data VoidF r 
 type Void'   = Fix VoidF
 
 -- Identity a
