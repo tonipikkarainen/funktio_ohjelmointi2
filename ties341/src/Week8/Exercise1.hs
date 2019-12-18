@@ -14,6 +14,7 @@ Derivative of Tree a from the binary-tree package.
 Derivative of Tree a from the containers package.
 -}
 
+-- Maybe
 
 {-
  data Maybe a = Just a | Nothing
@@ -29,6 +30,9 @@ Derivative of Tree a from the containers package.
 -}
 
 data DMaybe a = DMaybe
+
+
+-- Join 
 
 {-
 Join (,) a
@@ -46,6 +50,8 @@ vastaa muotoa - a x a
 -}
 
 type DJoin a = Either a a
+
+-- Lista
 
 {-
 [] a 
@@ -71,6 +77,26 @@ Fix ~ u_
 
 type DList a = ([a], [a])
 
+
+--- Stream 
+
+data StreamF a r = ConsStreamF a r 
+type Stream' a   = Fix (StreamF a)
+
+-- Stream' a vastaa muotoa:
+-- u_r ( a x r )
+{-
+  dlt_a (Stream' a )
+= dlt_a (u_r (a x r )) <- merkitään sisältöä S:llä
+= u_z (dlt_a (a x r) [r <- S] + dlt_r ( a x r ) [r <- S] x z)
+... ratkaisin paperilla
+= S x u_s ( 1 + a x s )
+
+-}
+type StreamD a = (Stream' a , [a]) 
+
+-- Tree
+
 data Tree a = Leaf | Node (Tree a) a (Tree a)
 
 data TreeF a r = LeafF | NodeF r a r
@@ -86,7 +112,24 @@ type Tree' a = Fix (TreeF a)
 = u_s ( dlt_a (1 + r x a x r) [r <- T] dlt_r (1 + r x a x r) [r <- T] x S )
 
     ... (ratkaisin paperilla)
-= (T * T) * (u_s ( 1 + 2 * ( a * T ) * s))
+= (T x T) x (u_s ( 1 + 2 x ( a x T ) x s))
 -}
 
-type DTree a = ((Tree a, Tree a) , [(Bool, (a, Tree a))]) 
+type DTree a = ((Tree' a, Tree' a) , [(Bool, (a, Tree' a))]) 
+
+-- Tree (from containers)
+{-
+data Rose.Tree a
+  = Rose.Node {Rose.rootLabel :: a,
+     Rose.subForest :: Rose.Forest a}
+  -}
+
+data RoseTreeF a r = RoseNodeF {rootLabel :: a, subForest :: [r] }
+type RoseTree' a = Fix (RoseTreeF a)
+{-
+  RoseTree' vastaa muotoa 
+  a * u_r ( 1 x (u_s (1 + r x s ) ) ) 
+= 
+  
+-}
+

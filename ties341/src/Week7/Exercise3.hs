@@ -90,6 +90,13 @@ absorbZeroMul e = case e of
     Let s x y -> Let s (absorbZeroMul x) (absorbZeroMul y)
     x -> x 
 
+assocAdd :: Expr -> Expr
+assocAdd e = case e of
+  Mul x y -> Mul (assocAdd x) (assocAdd y)
+  Let s x y -> Let s (assocAdd x) (assocAdd y)
+  Add (Add x z) y -> Add x (Add z y)
+  x -> x 
+
 -- Poistaa kaikki käyttämättömät bindit.
 -- eli jos tulee vastaan Let - niin lähdetään katsomaan 
 -- lauseketta, josta muuttuja pitäisi löytyä.

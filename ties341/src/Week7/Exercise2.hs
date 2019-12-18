@@ -156,6 +156,9 @@ data ExprF r = AddF r r
              | LetF String r r  
              | VarF String  
 
+-- Testing
+
+
 $(deriveFoldable ''ExprF)
 $(deriveFunctor ''ExprF)
 $(deriveShow1 ''ExprF)
