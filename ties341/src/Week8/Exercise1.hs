@@ -31,7 +31,6 @@ Derivative of Tree a from the containers package.
 
 data DMaybe a = DMaybe
 
-
 -- Join 
 
 {-
@@ -93,7 +92,7 @@ type Stream' a   = Fix (StreamF a)
 = S x u_s ( 1 + a x s )
 
 -}
-type StreamD a = (Stream' a , [a]) 
+type StreamD a = (Stream a , [a]) 
 
 -- Tree
 
@@ -115,7 +114,7 @@ type Tree' a = Fix (TreeF a)
 = (T x T) x (u_s ( 1 + 2 x ( a x T ) x s))
 -}
 
-type DTree a = ((Tree' a, Tree' a) , [(Bool, (a, Tree' a))]) 
+type DTree a = ((Tree a, Tree a) , [(Bool, a, Tree a)]) 
 
 -- Tree (from containers)
 {-
@@ -126,10 +125,21 @@ data Rose.Tree a
 
 data RoseTreeF a r = RoseNodeF {rootLabel :: a, subForest :: [r] }
 type RoseTree' a = Fix (RoseTreeF a)
+
+type DRoseTree a = ([Rose.Tree a] , [(a , ([Rose.Tree a],[Rose.Tree a]))])
+
+
 {-
   RoseTree' vastaa muotoa 
   a * u_r ( 1 x (u_s (1 + r x s ) ) ) 
 = 
-  
+... paperilla ratkaistu
+
+=
+
+ u_y ( [R]  + (a * [R] * [R] * y) 
+
+=  [ R ] * [ a * [R] * [R] ]
+
 -}
 
