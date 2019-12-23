@@ -6,10 +6,8 @@ import Data.Stream.Infinite (Stream (..))
 import qualified Data.Tree as Rose (Forest (..), Tree (..))
 import Week8.Exercise1
 
--- MonadThrow m => A -> m ZA
 
 -- puuttuu: 
--- * builderi rosetreelle
 -- * liikkuminen 
 --      * stream 
 --      * rosetree 
@@ -19,12 +17,12 @@ data MyException = OutOfTreeException | OutOfListException
 
 instance Exception MyException
 
--- Maybe
+-- 1 Maybe
 makeDMaybe :: MonadThrow m => Maybe a -> m (DMaybe a)
 makeDMaybe x = pure DMaybe
 -- Liikkuminen on käytännössä id - funktio.
 
--- Join 
+-- 2 Join 
 makeDJoinL ::  MonadThrow m => (a,a) -> m (DJoin a)
 makeDJoinL (x, y) = pure (Left x )
 
@@ -34,7 +32,7 @@ makeDJoinR (x, y) = pure ( Right y )
 -- Näille voitaisiin tehdä vasemman tai oikean
 -- tuottavat funktiot
 
--- List
+-- 3 List
 makeDList :: MonadThrow m => [a] -> m (DList a)
 makeDList xs = pure ([],xs)
 
@@ -47,11 +45,11 @@ goRight ::  MonadThrow m => DList a -> m (DList a)
 goRight (xs, []) = throwM OutOfListException
 goRight (xs, y:ys) = pure (y:xs, ys)
 
--- Stream
+-- 4 Stream
 makeDStream :: MonadThrow m => Stream a -> m (StreamD a)
 makeDStream (x :> xs) = pure (x :> xs, []) 
 
--- Tree
+-- 5 Tree
 -- type DTree a = ((Tree a, Tree a) , [(Bool, a, Tree a)]) 
 -- data Tree a = Leaf | Node (Tree a) a (Tree a)
 
@@ -70,6 +68,8 @@ makeDTree x = case x of
     Leaf        ->  pure ((Leaf, Leaf),[])
     Node t n t' ->  pure ((t,t'), (True, n, Leaf):[]) 
 
+testTree = Node (Node Leaf "x" (Node (Node Leaf "y" Leaf) "z" Leaf)) "k" (Node (Node Leaf "i" Leaf) "j" Leaf)
+-- testDTree = makeDTree testTree
 -- Binarytree left
 -- Left - False
 turnLeftB :: MonadThrow m => (DTree a) -> m (DTree a)
@@ -90,5 +90,18 @@ goBackB ( (t,t'), (x, y, Leaf):[] )   =  throwM OutOfTreeException
 goBackB ( (t, t'), (x, y, t'') : xs ) = case x of
     False -> pure (((Node t y t'), t''), xs)
     True  -> pure ((t'', (Node t y t')), xs)
+
+testBinTree x = do 
+    y <- makeDTree x
+    eka <- turnLeftB y
+    toka <- turnRightB eka
+    takas <- goBackB toka
+    takas2 <- goBackB takas
+    --takas3 <- goBackB takas2
+    return takas2
+
+-- 6 Rosetree
+makeDrose :: MonadThrow m => (Rose.Tree a) -> m (DRoseTree a)
+makeDrose xs = pure (Rose.subForest xs, (Rose.rootLabel xs, [],[]):[])
 
 

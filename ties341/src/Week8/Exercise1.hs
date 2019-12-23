@@ -96,11 +96,8 @@ type StreamD a = (Stream a , [a])
 
 -- Tree
 
-data Tree a = Leaf | Node (Tree a) a (Tree a)
+data Tree a = Leaf | Node (Tree a) a (Tree a) deriving (Show)
 
-data TreeF a r = LeafF | NodeF r a r
-
-type Tree' a = Fix (TreeF a)
 
 -- Tree
 {-
@@ -117,16 +114,9 @@ type Tree' a = Fix (TreeF a)
 type DTree a = ((Tree a, Tree a) , [(Bool, a, Tree a)]) 
 
 -- Tree (from containers)
-{-
-data Rose.Tree a
-  = Rose.Node {Rose.rootLabel :: a,
-     Rose.subForest :: Rose.Forest a}
-  -}
 
-data RoseTreeF a r = RoseNodeF {rootLabel :: a, subForest :: [r] }
-type RoseTree' a = Fix (RoseTreeF a)
 
-type DRoseTree a = ([Rose.Tree a] , [(a , ([Rose.Tree a],[Rose.Tree a]))])
+type DRoseTree a = ([Rose.Tree a] , [(a , [Rose.Tree a],[Rose.Tree a])])
 
 
 {-

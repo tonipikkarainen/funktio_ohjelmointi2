@@ -30,7 +30,7 @@ testFixExp = Fix (AddF (Fix (MulF (Fix OneF) (Fix ZeroF))) (Fix ZeroF))
 
 optimizeAlg' :: Algebra ExprF Expr'
 optimizeAlg' = (appEmbed . foldMap Embed) [unifyAddZero',
-    unifyMulOne']
+    unifyMulOne', assocAdd', assocMul']
 
 optimize' :: Expr' -> Expr'
 optimize' = cata optimizeAlg'
@@ -51,16 +51,6 @@ unifyAddZero' e = case e of
     AddF x (Fix ZeroF)  -> x
     x                   -> Fix x
 
-{-
-unifyAddZero :: Expr -> Expr
-unifyAddZero e = case e of
-    Add Zero y -> unifyAddZero y
-    Add x Zero -> unifyAddZero x
-    Add x y -> Add (unifyAddZero x) (unifyAddZero y)
-    Let s x y -> Let s (unifyAddZero x) (unifyAddZero y)
-    Mul x y -> Mul (unifyAddZero x) (unifyAddZero y)
-    x -> x   
--}
 unifyMulOne' :: Algebra ExprF Expr' 
 unifyMulOne' e = case e of
     MulF (Fix OneF) x -> x
@@ -72,3 +62,15 @@ absorbZeroMul' e = case e of
     MulF (Fix ZeroF) x -> Fix ZeroF
     MulF x (Fix ZeroF) -> Fix ZeroF
     x                  -> Fix x 
+
+assocAdd' :: Algebra ExprF Expr' 
+assocAdd' e = case e of
+  AddF (Fix (AddF x z)) y -> Fix (AddF x (Fix (AddF z y)) )
+  x -> Fix x
+
+
+assocMul' :: Algebra ExprF Expr' 
+assocMul' e = case e of
+  MulF (Fix (MulF x z)) y -> Fix (MulF x (Fix (MulF z y)) )
+  x -> Fix x
+
