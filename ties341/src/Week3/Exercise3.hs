@@ -1,6 +1,13 @@
 module Week3.Exercise3 where
 import Control.Applicative
 
+-- Parseri
+-- Sisältää tarvittavat instanssit
+-- ja muutamia parsimisessa käytettäviä funktioita.
+-- 
+-- Toni Pikkarainen
+-- 18.11.2019
+
 data ParseError = SomethingWentWrong
   deriving Show
 

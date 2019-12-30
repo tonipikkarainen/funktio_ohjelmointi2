@@ -29,5 +29,5 @@ executable ties341
                          profunctors,mtl,transformers,
                           text, megaparsec, http-client, http-types,
                           http-client-tls,bytestring, http-conduit,case-insensitive,
-                           ansi-terminal, directory, deriving-compat, streams
+                           ansi-terminal, directory, deriving-compat, streams, exceptions
 

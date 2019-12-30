@@ -11,32 +11,11 @@ type Unit = String
 type Record = [Unit]
 type Group = [Record]
 
-fromEither :: Either a a -> a
-fromEither (Left x) = x
-fromEither (Right x) = x
 
-showsEscaped :: String -> ShowS
-showsEscaped [] = id
-showsEscaped (c : cs)
-  | c == '"' = mappend (replicate 2 '"') . showsEscaped cs
-  | otherwise = (c :) . showsEscaped cs
-
-showsQuoted :: String -> ShowS
-showsQuoted cs = ('"' :) . showsEscaped cs . ('"' :)
-
-showsGroup :: Group -> ShowS
-showsGroup xsss = flip (foldr (\ xss ->
-  fromEither . runJoin . flip (foldr (\ xs css -> let
-    f = case intersect ['\n', '\r', '"', ','] xs of
-      [] -> mappend xs
-      _ : _ -> showsQuoted xs
-    x = case css of
-      Join (Left cs) -> ',' : cs
-      Join (Right cs) -> '\n' : cs in
-    Join (Right (f x)))) xss . Join . Left)) xsss
-
-
--- Tästä alkaa itse tehty parseri:
+-- CSV - tiedoston parsiminen
+--
+-- 18.11.2019
+-- Toni Pikkarainen
 
 -- Pienin yksikkö - pilkkujen välistä otettu merkkijono.
 -- Voi olla lainausmerkkien sisällä tai ilman lainausmerkkejä.
