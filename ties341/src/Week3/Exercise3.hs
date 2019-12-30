@@ -19,7 +19,7 @@ instance Functor Parser where
         case x z of
             Left _ -> Left SomethingWentWrong
             Right (jalj, merkki) -> Right (jalj, f merkki)
--- Nyt toimii myös data:lla
+
 instance Applicative Parser where
     pure x = Parser (\z -> Right (z,x))
     x <*> y = Parser (\merkkijono -> 
@@ -40,24 +40,6 @@ instance Monad Parser where
                         Right (s1, z) -> case (getParser (f z)) s1 of
                             Left _ -> Left SomethingWentWrong
                             Right y -> Right y ) 
-{-
--- Tällä koodilla ei toiminut kun parserin tyyppi oli määritelty
--- data-avainsanalla.
-instance Applicative Parser where
-    pure x = Parser (\z -> Right (z,x))
-    Parser f <*> Parser x = Parser (\merkkijono -> 
-        case (f merkkijono) of 
-            Left    _     -> Left SomethingWentWrong
-            Right (m, a) -> getParser (fmap a (Parser x)) m
-            )
- 
-instance Alternative Parser where
-    empty = Parser (\z -> Left SomethingWentWrong)
-    Parser x <|> Parser y = Parser $ \z -> 
-        case x z of 
-            Left _ -> (y z)
-            result      -> result
--}
 
 
 
